@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ inputs.env || github.event.inputs.env }}
-      url: "https://github.com/fluencelabs/fluence/tree/${{ github.sha }}"
+      url: "https://github.com/fluencelabs/fluence/commit/${{ github.sha }}"
 
     defaults:
       run:

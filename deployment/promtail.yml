@@ -1,0 +1,30 @@
+server:
+  http_listen_port: ${NOMAD_PORT_promtail}
+
+positions:
+  filename: "${NOMAD_ALLOC_DIR}/data/positions.yml"
+
+clients:
+  - url: "https://loki.fluence.dev/loki/api/v1/push"
+    tenant_id: "fluencelabs"
+    basic_auth:
+      username: "promtail"
+      password_file: "/secrets/auth"
+
+scrape_configs:
+  - job_name: "nox"
+    static_configs:
+      - labels:
+          source: "nox"
+          instance: "${INSTANCE}"
+          env: "stage"
+          __path__: "${NOMAD_ALLOC_DIR}/logs/nox.stdout.*"
+    pipeline_stages:
+      - logfmt:
+          mapping:
+            time:
+            level:
+            particle_id:
+      - timestamp:
+          source: time
+          format: "RFC3339Nano"

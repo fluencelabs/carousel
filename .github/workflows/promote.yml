@@ -1,0 +1,169 @@
+name: Promote packages
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Git ref to checkout to"
+        type: string
+        required: true
+      env:
+        description: "Name of the channel/env to promote"
+        type: string
+        required: true
+
+env:
+  CI: true
+  FORCE_COLOR: true
+
+jobs:
+  tag:
+    name: "Tag commit"
+    runs-on: ubuntu-latest
+
+    outputs:
+      cli_version: ${{ steps.versions.outputs.cli_version }}
+      cli_tag: ${{ steps.versions.outputs.cli_tag }}
+      nox: ${{ steps.versions.outputs.nox }}
+      npm: ${{ steps.versions.outputs.npm }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Get versions
+        id: versions
+        uses: ./.github/actions/get-versions
+
+      - name: Tag commit
+        uses: rickstaa/action-create-tag@v1
+        with:
+          tag: ${{ inputs.env }}
+          force_push_tag: true
+
+  cli:
+    name: "Promote cli"
+    runs-on: ubuntu-latest
+    needs: tag
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout cli repo
+        uses: actions/checkout@v3
+        with:
+          repository: fluencelabs/cli
+          ref: ${{ needs.tag.outputs.cli_tag }}
+
+      - name: Import secrets
+        uses: hashicorp/vault-action@v2.7.3
+        with:
+          url: https://vault.fluence.dev
+          path: jwt/github
+          role: ci
+          method: jwt
+          jwtGithubAudience: "https://github.com/fluencelabs"
+          jwtTtl: 300
+          exportToken: false
+          secrets: |
+            kv/ci/fcli-binaries id | AWS_ACCESS_KEY_ID ;
+            kv/ci/fcli-binaries secret | AWS_SECRET_ACCESS_KEY
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "yarn"
+
+      - run: yarn install
+
+      - name: Promote cli
+        run: |
+          yarn oclif promote \
+            -t linux-x64,darwin-x64,darwin-arm64 \
+            --version ${{ needs.tag.outputs.cli_version }} \
+            --sha "$(git rev-parse --short HEAD)" \
+            --channel ${{ inputs.env }} --no-xz
+
+  npm:
+    runs-on: ubuntu-latest
+    name: "Tag npm packages"
+    needs: tag
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Import secrets
+        uses: hashicorp/vault-action@v2.7.3
+        with:
+          url: https://vault.fluence.dev
+          path: jwt/github
+          role: ci
+          method: jwt
+          jwtGithubAudience: "https://github.com/fluencelabs"
+          jwtTtl: 300
+          exportToken: false
+          secrets: |
+            kv/npmjs/fluencebot token | NODE_AUTH_TOKEN
+
+      - name: Setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Tag npm packages
+        run: |
+          # Tag npm packages
+          while read -r package version; do
+            echo "Promoting ${package}@${version} to ${{ inputs.env }}"
+            npm dist-tag add ${package}@${version} ${{ inputs.env }}
+          done < <(echo '${{ needs.tag.outputs.npm }}' | jq -r '.[] | "\(.name) \(.version)"')
+
+      - name: Tag fluence cli
+        run: |
+          # Tag fluence cli
+          echo "Tagging @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} as ${{ inputs.env }}"
+          npm dist-tag add @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} ${{ inputs.env }}
+
+  docker:
+    runs-on: ubuntu-latest
+    name: "Tag nox container"
+    needs: tag
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Import secrets
+        uses: hashicorp/vault-action@v2.7.3
+        with:
+          url: https://vault.fluence.dev
+          path: jwt/github
+          role: ci
+          method: jwt
+          jwtGithubAudience: "https://github.com/fluencelabs"
+          jwtTtl: 300
+          exportToken: false
+          secrets: |
+            kv/hub.docker.com/fluencebot username | DOCKER_USERNAME ;
+            kv/hub.docker.com/fluencebot password | DOCKER_PASSWORD
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: Retag image
+        uses: akhilerm/tag-push-action@v2.1.0
+        with:
+          src: docker.io/fluencelabs/nox:${{ needs.tag.outputs.nox }}
+          dst: docker.io/fluencelabs/nox:${{ inputs.env }}

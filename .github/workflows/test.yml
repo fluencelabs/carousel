@@ -1,0 +1,41 @@
+name: "test"
+
+on:
+  pull_request:
+    paths:
+      - "!**.md"
+      - "deployment/**"
+      - "versions.json"
+      - ".github/workflows/test.yml"
+    types:
+      - "labeled"
+      - "synchronize"
+      - "opened"
+      - "reopened"
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  versions:
+    runs-on: ubuntu-latest
+
+    outputs:
+      versions: ${{ steps.versions.outputs.versions }}
+      cli_tag: ${{ steps.versions.outputs.cli_tag }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Get versions
+        id: versions
+        uses: ./.github/actions/get-versions
+
+  cli:
+    needs: versions
+    uses: fluencelabs/cli/.github/workflows/tests.yml@main
+    with:
+      nox-image: "${{ fromJson(needs.versions.outputs.versions)['nox'] }}"
+      ref: "${{ needs.versions.outputs.cli_tag }}"

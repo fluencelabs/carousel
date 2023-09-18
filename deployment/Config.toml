@@ -1,0 +1,11 @@
+autodeploy_particle_ttl = "60s"
+builtins_base_dir = "/builtins"
+
+packet_split_size = 16384
+
+[kademlia]
+max_packet_size = 10040964096 # 100 Mb
+query_timeout = "10s"
+connection_idle_timeout = "1h"
+peer_fail_threshold = 3
+ban_cooldown = "60s"

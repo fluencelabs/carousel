@@ -1,0 +1,19 @@
+name: Get versions
+description: |
+  Combine all dependencies from fluencelabs/cli version.json, package-lock.json and local versions.json
+
+runs:
+  using: "node16"
+  main: "dist/index.js"
+
+outputs:
+  versions:
+    description: "Merged versions.json file"
+  npm:
+    description: "List of npm packages"
+  nox:
+    description: "Nox version"
+  cli_tag:
+    description: "fluencelabs/cli repo tag"
+  cli_version:
+    description: "CLI version"

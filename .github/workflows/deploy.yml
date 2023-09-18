@@ -1,0 +1,261 @@
+name: deploy
+
+on:
+  workflow_call:
+    inputs:
+      env:
+        description: "env to deploy to"
+        type: string
+        required: true
+      ref:
+        description: "git ref to deploy from"
+        type: string
+        required: false
+        default: ${{ github.ref }}
+
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "env to deploy to"
+        type: environment
+        required: true
+
+concurrency:
+  group: ${{ inputs.env || github.event.inputs.env }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.env || github.event.inputs.env }}
+      url: "https://github.com/fluencelabs/fluence/tree/${{ github.sha }}"
+
+    defaults:
+      run:
+        working-directory: "deployment"
+
+    env:
+      ENV: ${{ vars.ENV }}
+      NOMAD_JOB: nox
+      NOMAD_NAMESPACE: fluence
+      NOMAD_REGION: ${{ vars.ENV }}
+      TF_VAR_replicas: ${{ vars.REPLICAS }}
+
+    outputs:
+      ENV: ${{ vars.ENV }}
+      REPLICAS: ${{ vars.REPLICAS }}
+
+      npm: ${{ steps.cli.outputs.npm }}
+      nox: ${{ steps.cli.outputs.nox }}
+      cli_version: ${{ steps.cli.outputs.cli_version }}
+      cli_tag: ${{ steps.cli.outputs.cli_tag }}
+
+    permissions:
+      contents: write
+      actions: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Get versions
+        id: versions
+        uses: ./.github/actions/get-versions
+
+      - name: Set nox version
+        run: echo "TF_VAR_nox=${{ fromJson(steps.versions.outputs.versions)['nox'] }}" >> $GITHUB_ENV
+
+      - name: Set cli version
+        id: cli
+        run: |
+          echo "cli_tag=${{ steps.versions.outputs.cli_tag }}" >> $GITHUB_OUTPUT
+          echo "cli_version=${{ steps.versions.outputs.cli_version }}" >> $GITHUB_OUTPUT
+
+      - name: Get vault token
+        uses: hashicorp/vault-action@v2.7.2
+        with:
+          url: "https://vault.fluence.dev"
+          path: jwt/github
+          role: fluence
+          method: jwt
+          jwtGithubAudience: "https://github.com/fluencelabs"
+          jwtTtl: 300
+          exportToken: true
+
+      - name: Setup consul-template
+        uses: nahsi/setup-hashi-tool@v1
+        with:
+          name: consul-template
+
+      - name: Prepare secrets
+        env:
+          VAULT_ADDR: "https://vault.fluence.dev"
+        run: |
+          # prepare secrets
+          consul-template -once -template "env.tmpl:env"
+          sleep 10
+
+      - name: Source secrets
+        run: |
+          while IFS='=' read -r key value; do
+            if [[ ! -z "$key" ]]; then
+              echo "::add-mask::$value"
+              echo "$key=$value" >> $GITHUB_ENV
+            fi
+          done < "env"
+
+      - name: Setup terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: terraform init
+        id: init
+        run: terraform init
+
+      - name: Terraform create workspace
+        run: |
+          terraform workspace select -or-create=true ${{ env.ENV }}
+
+      - name: terraform plan
+        id: plan
+        run: terraform plan -no-color
+
+      - name: Print terraform plan to checks
+        run: |
+          cat <<'PLAN' >> $GITHUB_STEP_SUMMARY
+          ## ${{ env.ENV }} plan
+          ```
+          ${{ steps.plan.outputs.stdout }}
+          ```
+          PLAN
+
+      - name: terraform apply
+        run: terraform apply -auto-approve
+
+      - name: Setup nomad
+        uses: nahsi/setup-hashi-tool@v1
+        with:
+          name: nomad
+
+      - name: nomad job status
+        run: |
+          sleep 10
+          nomad job status -verbose ${NOMAD_JOB}
+          cat << STATUS > $GITHUB_STEP_SUMMARY
+          ## ${{ env.ENV }} status
+          \`\`\`
+          $(nomad job status -verbose ${NOMAD_JOB})
+          \`\`\`
+          STATUS
+
+  # cli:
+  #   needs:
+  #     - deploy
+  #   uses: fluencelabs/cli/.github/workflows/tests.yml@main
+  #   with:
+  #     fluence-env: ${{ inputs.env || github.event.inputs.env }}
+  #     ref: ${{ needs.deploy.outputs.cli_tag }}
+
+  promote:
+    needs:
+      - deploy
+    uses: ./.github/workflows/promote.yml
+    with:
+      ref: ${{ inputs.ref || github.ref }}
+      env: ${{ inputs.env || github.event.inputs.env }}
+
+  revert:
+    if: failure()
+    runs-on: ubuntu-latest
+
+    needs:
+      - deploy
+
+    defaults:
+      run:
+        working-directory: "deployment"
+
+    env:
+      ENV: ${{ needs.deploy.outputs.ENV }}
+      NOMAD_JOB: nox
+      NOMAD_NAMESPACE: fluence
+      NOMAD_REGION: ${{ needs.deploy.outputs.ENV }}
+      TF_VAR_replicas: ${{ needs.deploy.outputs.REPLICAS }}
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.env }}
+
+      - name: Get versions
+        id: versions
+        uses: ./.github/actions/get-versions
+
+      - name: Set nox version
+        run: echo "TF_VAR_redis=${{ fromJson(steps.versions.outputs.versions)['redis'] }}" >> $GITHUB_ENV
+
+      - name: Get vault token
+        uses: hashicorp/vault-action@v2.7.2
+        with:
+          url: "https://vault.fluence.dev"
+          path: jwt/github
+          role: fluence
+          method: jwt
+          jwtGithubAudience: "https://github.com/fluencelabs"
+          jwtTtl: 300
+          exportToken: true
+          secrets: |
+            kv/github/tokens/fluencebot token | FLUENCEBOT_TOKEN
+
+      - name: Setup consul-template
+        uses: nahsi/setup-hashi-tool@v1
+        with:
+          name: consul-template
+
+      - name: Prepare secrets
+        env:
+          VAULT_ADDR: "https://vault.fluence.dev"
+        run: |
+          # prepare secrets
+          consul-template -once -template "env.tmpl:env"
+          sleep 10
+
+      - name: Source secrets
+        run: |
+          while IFS='=' read -r key value; do
+            if [[ ! -z "$key" ]]; then
+              echo "::add-mask::$value"
+              echo "$key=$value" >> $GITHUB_ENV
+            fi
+          done < "env"
+
+      - name: Setup terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: terraform init
+        id: init
+        run: terraform init
+
+      - name: Terraform create workspace
+        run: |
+          terraform workspace select -or-create=true ${{ env.ENV }}
+
+      - name: terraform apply
+        run: terraform apply -auto-approve
+
+      - name: Setup nomad
+        uses: nahsi/setup-hashi-tool@v1
+        with:
+          name: nomad
+
+      - name: nomad job status
+        run: |
+          sleep 10
+          nomad job status -verbose ${NOMAD_JOB}

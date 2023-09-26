@@ -173,7 +173,7 @@ job "nox" {
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = "10"
         FLUENCE_MAX_SPELL_PARTICLE_TTL                       = "9s"
         FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID         = "80001"
-        FLUENCE_ENV_CONNECTOR_API_ENDPOINT                   = "https://polygon-mumbai.g.alchemy.com/v2/Lb6BZr1VMEgcpAfeUGCBw2-BMHzjWWoq"
+        FLUENCE_ENV_CONNECTOR_API_ENDPOINT                   = "https://polygon-mumbai.g.alchemy.com/v2/4hulPrvgYR382gU8V0qcsvmWZhHuZMkQ"
         FLUENCE_ENV_CONNECTOR_FROM_BLOCK                     = "0x25C5AD8"
         FLUENCE_ENV_CONNECTOR_CONTRACT_ADDRESS               = "0x38A7fF922d7FeAE7CA7D3242BC4e87614f1FfDda"
 

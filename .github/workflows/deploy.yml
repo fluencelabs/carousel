@@ -133,7 +133,7 @@ jobs:
         if: github.event.inputs.cleanup || steps.labels.outputs.result
         run: |
           terraform taint "nomad_job.nox"
-          for (( i=0; i<{{ env.REPLICAS }}; i++ ))
+          for (( i=0; i<${{ vars.REPLICAS }}; i++ ))
           do
             terraform taint "nomad_csi_volume.nox[${i}]"
           done

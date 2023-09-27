@@ -32,10 +32,6 @@ job "nox" {
       max_parallel = 4
     }
 
-    meta {
-      instance = "nox-${NOMAD_ALLOC_INDEX}"
-    }
-
     network {
       dns {
         servers = [

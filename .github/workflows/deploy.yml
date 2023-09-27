@@ -21,7 +21,6 @@ on:
         required: true
       cleanup:
         description: "whether to recreate volumes"
-        type: bool
         default: "false"
         type: choice
         options:

@@ -65,9 +65,29 @@ resource "nomad_csi_volume" "nox" {
   }
 }
 
+resource "nomad_csi_volume" "ipfs" {
+  namespace    = "fluence"
+  plugin_id    = "do-csi"
+  volume_id    = "ipfs"
+  name         = "${terraform.workspace}-ipfs"
+  capacity_min = "10GiB"
+  capacity_max = "10GiB"
+
+  capability {
+    access_mode     = "single-node-writer"
+    attachment_mode = "file-system"
+  }
+
+  mount_options {
+    fs_type     = "ext4"
+    mount_flags = ["noatime"]
+  }
+}
+
 resource "nomad_job" "nox" {
   depends_on = [
     nomad_csi_volume.nox,
+    nomad_csi_volume.ipfs,
     vault_policy.nox,
     vault_policy.promtail,
     consul_keys.configs,
@@ -78,6 +98,7 @@ resource "nomad_job" "nox" {
   purge_on_destroy = true
 
   hcl2 {
+    allow_fs = true
     vars = {
       env             = terraform.workspace
       replicas        = var.replicas
@@ -93,6 +114,13 @@ resource "cloudflare_record" "nox" {
 
   zone_id = data.cloudflare_zone.fluence_dev.zone_id
   name    = "${count.index}-${terraform.workspace}"
+  value   = data.terraform_remote_state.state.outputs.ingress_ip4
+  type    = "A"
+}
+
+resource "cloudflare_record" "ipfs" {
+  zone_id = data.cloudflare_zone.fluence_dev.zone_id
+  name    = "${terraform.workspace}-ipfs"
   value   = data.terraform_remote_state.state.outputs.ingress_ip4
   type    = "A"
 }

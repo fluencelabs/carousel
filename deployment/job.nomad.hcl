@@ -173,9 +173,6 @@ job "nox" {
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = "10"
         FLUENCE_MAX_SPELL_PARTICLE_TTL                       = "9s"
         FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID         = "80001"
-        FLUENCE_ENV_CONNECTOR_API_ENDPOINT                   = "https://polygon-mumbai.g.alchemy.com/v2/4hulPrvgYR382gU8V0qcsvmWZhHuZMkQ"
-        FLUENCE_ENV_CONNECTOR_FROM_BLOCK                     = "0x25C5AD8"
-        FLUENCE_ENV_CONNECTOR_CONTRACT_ADDRESS               = "0x38A7fF922d7FeAE7CA7D3242BC4e87614f1FfDda"
 
         FLUENCE_CONFIG      = "/local/Config.toml"
         FLUENCE_LOG__FORMAT = "logfmt"
@@ -245,7 +242,7 @@ job "nox" {
 
       template {
         data        = <<-EOH
-        {{- with secret "kv/nox/stage/management" -}}
+        {{- with secret "kv/nox/${var.env}/management" -}}
         MANAGEMENT_KEY='{{ .Data.peer_id }}'
         {{- end -}}
         EOH
@@ -255,9 +252,15 @@ job "nox" {
 
       template {
         data        = <<-EOH
-        {{- with secret (env "NOMAD_ALLOC_INDEX" | printf "kv/nox/stage/nodes/%s") -}}
+        {{- with secret (env "NOMAD_ALLOC_INDEX" | printf "kv/nox/${var.env}/nodes/%s") -}}
         KEY={{ .Data.private }}
         FLUENCE_ENV_CONNECTOR_WALLET_KEY={{ .Data.wallet_key }}
+        {{- end }}
+
+        {{ with secret "kv/nox/${var.env}/connector" -}}
+        FLUENCE_ENV_CONNECTOR_API_ENDPOINT={{ .Data.api_endpoint }}
+        FLUENCE_ENV_CONNECTOR_FROM_BLOCK={{ .Data.from_block }}
+        FLUENCE_ENV_CONNECTOR_CONTRACT_ADDRESS={{ .Data.contract_address }}
         {{- end -}}
         EOH
         destination = "secrets/node-secrets.env"

@@ -97,13 +97,6 @@ resource "cloudflare_record" "nox" {
   type    = "A"
 }
 
-resource "cloudflare_record" "nox-legacy" {
-  zone_id = data.cloudflare_zone.fluence_dev.zone_id
-  name    = terraform.workspace
-  value   = data.terraform_remote_state.state.outputs.ingress_ip4
-  type    = "A"
-}
-
 data "vault_generic_secret" "keys" {
   count = var.replicas
   path  = "kv/nox/${terraform.workspace}/nodes/${count.index}"

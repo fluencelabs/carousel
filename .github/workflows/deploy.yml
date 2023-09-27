@@ -19,6 +19,10 @@ on:
         description: "env to deploy to"
         type: environment
         required: true
+      cleanup:
+        description: "whenever to recreate volumes"
+        type: bool
+        default: false
 
 concurrency:
   group: ${{ inputs.env || github.event.inputs.env }}
@@ -117,6 +121,22 @@ jobs:
       - name: Terraform create workspace
         run: |
           terraform workspace select -or-create=true ${{ env.ENV }}
+
+      - name: Check PR labels action step
+        id: labels
+        uses: shioyang/check-pr-labels-on-push-action@v1.0.9
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          labels: '["cleanup"]'
+
+      - name: Cleanup volumes
+        if: github.event.inputs.cleanup || steps.labels.outputs.result
+        run: |
+          terraform taint "nomad_job.nox"
+          for (( i=0; i<{{ env.REPLICAS }}; i++ ))
+          do
+            terraform taint "nomad_csi_volume.nox[${i}]"
+          done
 
       - name: terraform plan
         id: plan

@@ -33,12 +33,6 @@ job "nox" {
     }
 
     network {
-      dns {
-        servers = [
-          "1.1.1.1",
-        ]
-      }
-
       port "tcp" {
         host_network = "public"
       }
@@ -158,7 +152,7 @@ job "nox" {
       env {
         IPFS_DAEMON                                  = false
         FLUENCE_ENV_AQUA_IPFS_EXTERNAL_API_MULTIADDR = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
-        FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/dns4/${var.env}-ipfs.service.consul/tcp/5020"
+        FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
 
         FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider"
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = "10"
@@ -182,6 +176,7 @@ job "nox" {
           replica = "nox-${NOMAD_ALLOC_INDEX}"
         }
 
+        entrypoint = ["/local/entrypoint.sh"]
         args = [
           "--allow-private-ips",
           "${BOOTSTRAP}",
@@ -209,6 +204,12 @@ job "nox" {
           "ipfs_api",
           "ipfs_gateway",
         ]
+      }
+
+      template {
+        data        = file("entrypoint.sh")
+        destination = "local/entrypoint.sh"
+        perms       = 777
       }
 
       template {

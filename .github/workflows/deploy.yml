@@ -21,11 +21,11 @@ on:
         required: true
       cleanup:
         description: "whether to recreate volumes"
-        default: "false"
         type: choice
         options:
-          - false
-          - true
+          - "false"
+          - "true"
+        default: "false"
 
 concurrency:
   group: ${{ inputs.env || github.event.inputs.env }}

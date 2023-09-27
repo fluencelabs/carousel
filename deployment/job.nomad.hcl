@@ -151,19 +151,14 @@ job "nox" {
 
       resources {
         cpu        = 1000
-        memory     = 2000
+        memory     = 1000
         memory_max = 3000
       }
 
       env {
-        IPFS_ADDRESSES_SWARM    = "/ip4/0.0.0.0/tcp/${NOMAD_PORT_ipfs_swarm},/ip4/0.0.0.0/tcp/${NOMAD_PORT_ipfs_swarm}/ws"
-        IPFS_ADDRESSES_API      = "/ip4/0.0.0.0/tcp/${NOMAD_PORT_ipfs_api}"
-        IPFS_ADDRESSES_GATEWAY  = "/ip4/0.0.0.0/tcp/${NOMAD_PORT_ipfs_gateway}"
-        IPFS_ADDRESSES_ANNOUNCE = "/ip4/${NOMAD_HOST_IP_ipfs_swarm}/tcp/${NOMAD_PORT_ipfs_swarm},/ip4/${NOMAD_HOST_IP_ipfs_swarm}/tcp/${NOMAD_PORT_ipfs_swarm}/ws"
-        IPFS_PATH               = "/.fluence/ipfs"
-
-        FLUENCE_ENV_AQUA_IPFS_EXTERNAL_API_MULTIADDR = "/ip4/${NOMAD_HOST_IP_ipfs_api}/tcp/${NOMAD_PORT_ipfs_api}"
-        FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/ip4/127.0.0.1/tcp/${NOMAD_PORT_ipfs_api}"
+        IPFS_DAEMON                                  = false
+        FLUENCE_ENV_AQUA_IPFS_EXTERNAL_API_MULTIADDR = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
+        FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/dns4/${var.env}-ipfs.service.consul/tcp/5020"
 
         FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider"
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = "10"
@@ -315,6 +310,88 @@ job "nox" {
         EOH
 
         destination = "secrets/auth"
+      }
+    }
+  }
+
+  group "ipfs" {
+    network {
+      port "api" {
+        to     = 5020
+        static = 5020
+      }
+
+      port "gateway" {}
+
+      port "swarm" {
+        host_network = "public"
+      }
+
+      port "swarm-ws" {
+        host_network = "public"
+      }
+    }
+
+    service {
+      name = "${var.env}-ipfs"
+      port = "api"
+
+      tags = [
+        "traefik.enable=true",
+        "traefik.tcp.routers.ipfs-api.entrypoints=ipfs-api",
+        "traefik.tcp.routers.ipfs-api.rule=HostSNI(`*`)",
+      ]
+    }
+
+    volume "ipfs" {
+      type            = "csi"
+      source          = "ipfs"
+      attachment_mode = "file-system"
+      access_mode     = "single-node-writer"
+    }
+
+    task "ipfs" {
+      driver = "docker"
+
+      volume_mount {
+        volume      = "ipfs"
+        destination = "/data/ipfs"
+      }
+
+      env {
+        IPFS_PATH    = "/data/ipfs"
+        IPFS_PROFILE = "server"
+      }
+
+      config {
+        image = "ipfs/go-ipfs:v0.16.0"
+
+        ports = [
+          "api",
+          "gateway",
+          "swarm",
+          "swarm-ws",
+        ]
+
+        volumes = [
+          "local/ipfs/:/container-init.d/",
+        ]
+      }
+
+      dynamic "template" {
+        for_each = fileset(".", "ipfs/*.sh")
+
+        content {
+          data        = file(template.value)
+          destination = "local/${template.value}"
+          change_mode = "noop"
+        }
+      }
+
+      resources {
+        cpu        = 500
+        memory     = 256
+        memory_max = 1024
       }
     }
   }

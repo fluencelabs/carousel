@@ -20,9 +20,13 @@ on:
         type: environment
         required: true
       cleanup:
-        description: "whenever to recreate volumes"
+        description: "whether to recreate volumes"
         type: bool
-        default: false
+        default: "false"
+        type: choice
+        options:
+          - false
+          - true
 
 concurrency:
   group: ${{ inputs.env || github.event.inputs.env }}
@@ -130,7 +134,7 @@ jobs:
           labels: '["cleanup"]'
 
       - name: Cleanup volumes
-        if: github.event.inputs.cleanup || steps.labels.outputs.result
+        if: github.event.inputs.cleanup == 'true' || steps.labels.outputs.result
         run: |
           terraform taint "nomad_job.nox"
           for (( i=0; i<${{ vars.REPLICAS }}; i++ ))

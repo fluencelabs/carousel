@@ -121,19 +121,19 @@ jobs:
         id: init
         run: terraform init
 
-      - name: Terraform create workspace
+      - name: Terraform select workspace
         run: |
           terraform workspace select -or-create=true ${{ env.ENV }}
 
-      - name: Check PR labels action step
+      - name: Check PR labels
         id: labels
         uses: shioyang/check-pr-labels-on-push-action@v1.0.9
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           labels: '["cleanup"]'
 
-      - name: Cleanup volumes
-        if: github.event.inputs.cleanup == 'true' || steps.labels.outputs.result
+      - name: Cleanup nox volumes
+        if: github.event.inputs.cleanup == 'true' || steps.labels.outputs.result == 'true'
         run: |
           terraform taint "nomad_job.nox"
           for (( i=0; i<${{ vars.REPLICAS }}; i++ ))

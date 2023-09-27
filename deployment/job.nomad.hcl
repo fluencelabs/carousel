@@ -182,7 +182,6 @@ job "nox" {
       config {
         image          = var.nox-image
         auth_soft_fail = true
-        network_mode   = "host"
 
         labels {
           replica = "nox-${NOMAD_ALLOC_INDEX}"

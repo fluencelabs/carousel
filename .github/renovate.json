@@ -5,7 +5,7 @@
   "regexManagers": [
     {
       "fileMatch": [
-        "^src/versions\\.json$"
+        "^versions\\.json$"
       ],
       "matchStrings": [
         "\"nox\": \"(?<lookupName>fluencelabs/nox):rich_(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
@@ -15,7 +15,7 @@
       "depNameTemplate": "nox"
     },
     {
-      "fileMatch": ["^src/versions\\.json$"],
+      "fileMatch": ["^versions\\.json$"],
       "matchStrings": [
         "\"cli\": \"(?<lookupName>@fluencelabs/cli)@(?<currentValue>[^\"\n]+)\""
       ],

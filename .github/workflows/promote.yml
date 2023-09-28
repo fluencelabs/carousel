@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
 
@@ -54,7 +54,7 @@ jobs:
 
     steps:
       - name: Checkout cli repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: fluencelabs/cli
           ref: ${{ needs.tag.outputs.cli_tag }}

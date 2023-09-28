@@ -8,12 +8,11 @@
         "^src/versions\\.json$"
       ],
       "matchStrings": [
-        "\"nox\": \"fluencelabs/nox:rich_(?<currentValue>\\d+\\.\\d+\\.\\d+)\",\n"
+        "\"nox\": \"(?<lookupName>fluencelabs/nox):rich_(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
       ],
       "datasourceTemplate": "docker",
       "versioningTemplate": "semver",
-      "depNameTemplate": "nox",
-      "valueTemplate": "rich_{{currentValue}}"
+      "depNameTemplate": "nox"
     },
     {
       "fileMatch": ["^src/versions\\.json$"],

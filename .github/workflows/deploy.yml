@@ -82,7 +82,7 @@ jobs:
           echo "cli_version=${{ steps.versions.outputs.cli_version }}" >> $GITHUB_OUTPUT
 
       - name: Get vault token
-        uses: hashicorp/vault-action@v2.7.2
+        uses: hashicorp/vault-action@v2.7.3
         with:
           url: "https://vault.fluence.dev"
           path: jwt/github
@@ -225,7 +225,7 @@ jobs:
         run: echo "TF_VAR_redis=${{ fromJson(steps.versions.outputs.versions)['redis'] }}" >> $GITHUB_ENV
 
       - name: Get vault token
-        uses: hashicorp/vault-action@v2.7.2
+        uses: hashicorp/vault-action@v2.7.3
         with:
           url: "https://vault.fluence.dev"
           path: jwt/github

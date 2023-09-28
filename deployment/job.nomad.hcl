@@ -154,7 +154,7 @@ job "nox" {
         FLUENCE_ENV_AQUA_IPFS_EXTERNAL_API_MULTIADDR = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
         FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
 
-        FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider"
+        FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider,registry"
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = "10"
         FLUENCE_MAX_SPELL_PARTICLE_TTL                       = "9s"
         FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID         = "80001"

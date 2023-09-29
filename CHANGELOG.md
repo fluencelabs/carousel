@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.3](https://github.com/fluencelabs/carousel/compare/v0.0.2...v0.0.3) (2023-09-29)
+
+
+### Features
+
+* **deps:** update dependency cli to v0.9.0 ([#22](https://github.com/fluencelabs/carousel/issues/22)) ([06877d8](https://github.com/fluencelabs/carousel/commit/06877d8daab08d8638888d406f08615639857ffd))
+
 ## [0.0.2](https://github.com/fluencelabs/carousel/compare/v0.0.1...v0.0.2) (2023-09-27)
 
 

@@ -6,8 +6,6 @@ on:
       - "main"
     paths-ignore:
       - "**.md"
-      - ".github/**"
-      - ".github/release-please/manifest.json"
 
 jobs:
   release-please:
@@ -50,7 +48,7 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       env: testnet
-      ref: ${{ needs.release-please.outputs.tag_name }}
+      ref: ${{ needs.release-please.outputs.tag-name }}
 
   kras:
     if: needs.release-please.outputs.release-created
@@ -58,4 +56,4 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       env: kras
-      ref: ${{ needs.release-please.outputs.tag_name }}
+      ref: ${{ needs.release-please.outputs.tag-name }}

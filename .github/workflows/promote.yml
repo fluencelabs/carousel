@@ -38,11 +38,10 @@ jobs:
         uses: ./.github/actions/get-versions
 
       - name: Tag commit
-        uses: weareyipyip/walking-tag-action@v2
+        uses: rickstaa/action-create-tag@v1
         with:
-          tag-name: ${{ inputs.env }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ inputs.env }}
+          force_push_tag: true
 
   cli:
     name: "Promote cli"

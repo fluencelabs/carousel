@@ -1,4 +1,4 @@
 {
   "nox": "fluencelabs/nox:rich_0.2.9",
-  "cli": "@fluencelabs/cli@0.9.0"
+  "cli": "@fluencelabs/cli@0.9.1"
 }

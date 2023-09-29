@@ -38,7 +38,7 @@ jobs:
         uses: ./.github/actions/get-versions
 
       - name: Tag commit
-        uses: weareyipyip/walking-tag-action@v1
+        uses: weareyipyip/walking-tag-action@v2
         with:
           tag-name: ${{ inputs.env }}
         env:

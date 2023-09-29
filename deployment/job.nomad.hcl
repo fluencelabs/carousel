@@ -146,7 +146,7 @@ job "nox" {
       resources {
         cpu        = 1000
         memory     = 1000
-        memory_max = 3000
+        memory_max = 2500
       }
 
       env {

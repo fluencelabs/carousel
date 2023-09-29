@@ -38,10 +38,11 @@ jobs:
         uses: ./.github/actions/get-versions
 
       - name: Tag commit
-        uses: rickstaa/action-create-tag@v1
+        uses: richardsimko/update-tag@v1
         with:
-          tag: ${{ inputs.env }}
-          force_push_tag: true
+          tag_name: ${{ inputs.env }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   cli:
     name: "Promote cli"

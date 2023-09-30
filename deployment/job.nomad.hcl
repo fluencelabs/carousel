@@ -132,6 +132,9 @@ job "nox" {
     task "nox" {
       driver = "docker"
 
+      kill_signal  = "SIGINT"
+      kill_timeout = "30s"
+
       vault {
         policies = [
           var.nox-policy,

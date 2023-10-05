@@ -88,7 +88,7 @@ jobs:
             -t linux-x64,darwin-x64,darwin-arm64 \
             --version ${{ needs.tag.outputs.cli_version }} \
             --sha "$(git rev-parse --short HEAD)" \
-            --channel ${{ inputs.env }} --no-xz
+            --channel ${{ inputs.env }} --no-xz --indexes
 
   npm:
     runs-on: ubuntu-latest

@@ -157,9 +157,12 @@ job "nox" {
       }
 
       env {
-        IPFS_DAEMON                                  = false
+        IPFS_DAEMON = false
+
         FLUENCE_ENV_AQUA_IPFS_EXTERNAL_API_MULTIADDR = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
         FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
+
+        FLUENCE_ENV_CONNECTOR_API_ENDPOINT = "https://${var.env}-rpc.fluence.dev"
 
         FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider,registry"
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = "10"
@@ -256,7 +259,6 @@ job "nox" {
         {{- end }}
 
         {{ with secret "kv/nox/${var.env}/connector" -}}
-        FLUENCE_ENV_CONNECTOR_API_ENDPOINT='{{ .Data.api_endpoint }}/v2/{{ .Data.api_secret }}'
         FLUENCE_ENV_CONNECTOR_FROM_BLOCK={{ .Data.from_block }}
         FLUENCE_ENV_CONNECTOR_CONTRACT_ADDRESS={{ .Data.contract_address }}
         {{- end -}}

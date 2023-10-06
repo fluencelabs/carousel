@@ -33,7 +33,9 @@ job "nox" {
     count = var.replicas
 
     update {
-      max_parallel = 4
+      max_parallel      = 6
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
     }
 
     network {

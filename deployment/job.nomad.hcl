@@ -18,6 +18,10 @@ variable "promtail-policy" {
   type = string
 }
 
+variable "proxy-policy" {
+  type = string
+}
+
 job "nox" {
   region = var.env
   datacenters = [
@@ -29,7 +33,9 @@ job "nox" {
     count = var.replicas
 
     update {
-      max_parallel = 4
+      max_parallel      = 6
+      healthy_deadline  = "10m"
+      progress_deadline = "15m"
     }
 
     network {
@@ -153,9 +159,12 @@ job "nox" {
       }
 
       env {
-        IPFS_DAEMON                                  = false
+        IPFS_DAEMON = false
+
         FLUENCE_ENV_AQUA_IPFS_EXTERNAL_API_MULTIADDR = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
         FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
+
+        FLUENCE_ENV_CONNECTOR_API_ENDPOINT = "https://${var.env}-rpc.fluence.dev"
 
         FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider,registry"
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = "10"
@@ -252,7 +261,6 @@ job "nox" {
         {{- end }}
 
         {{ with secret "kv/nox/${var.env}/connector" -}}
-        FLUENCE_ENV_CONNECTOR_API_ENDPOINT={{ .Data.api_endpoint }}
         FLUENCE_ENV_CONNECTOR_FROM_BLOCK={{ .Data.from_block }}
         FLUENCE_ENV_CONNECTOR_CONTRACT_ADDRESS={{ .Data.contract_address }}
         {{- end -}}
@@ -396,6 +404,97 @@ job "nox" {
         cpu        = 500
         memory     = 256
         memory_max = 1024
+      }
+    }
+  }
+
+  group "rpc-proxy" {
+    network {
+      port "http" {}
+    }
+
+    service {
+      name = "${var.env}-rpc"
+      port = "http"
+
+      tags = [
+        "traefik.enable=true",
+        "traefik.tcp.routers.rpc-proxy.entrypoints=https",
+        "traefik.tcp.routers.rpc-proxy.rule=HostSNI(`${var.env}-rpc.fluence.dev`)",
+        "traefik.tcp.routers.rpc-proxy.tls.passthrough=true",
+      ]
+    }
+
+    task "caddy" {
+      driver = "docker"
+
+      env {
+        PORT = NOMAD_PORT_http
+        ENV  = var.env
+      }
+
+      vault {
+        policies = [
+          var.proxy-policy,
+        ]
+      }
+
+      config {
+        image = "caddy:2-alpine"
+
+        ports = [
+          "http",
+        ]
+
+        volumes = [
+          "local/Caddyfile:/etc/caddy/Caddyfile",
+        ]
+      }
+
+      template {
+        data        = <<-EOH
+        {{ key "configs/fluence/nox/Caddyfile" }}
+        EOH
+        destination = "local/Caddyfile"
+      }
+
+      template {
+        data        = <<-EOH
+        {{- with secret "kv/nox/${var.env}/connector" -}}
+        API='{{ .Data.api_endpoint }}'
+        SECRET='{{ .Data.api_secret }}'
+        {{- end -}}
+        EOH
+        destination = "secrets/api.env"
+        env         = true
+      }
+
+      template {
+        data = <<-EOH
+        {{- with secret "kv/certs/fluence.dev/wildcard" -}}
+        {{ .Data.ca_bundle }}{{ end }}
+        EOH
+
+        destination = "secrets/cert.pem"
+        change_mode = "restart"
+        splay       = "10m"
+      }
+
+      template {
+        data = <<-EOH
+        {{- with secret "kv/certs/fluence.dev/wildcard" -}}
+        {{ .Data.private_key }}{{ end }}
+        EOH
+
+        destination = "secrets/key.pem"
+        change_mode = "restart"
+        splay       = "10m"
+      }
+
+      resources {
+        cpu        = 50
+        memory     = 64
+        memory_max = 128
       }
     }
   }

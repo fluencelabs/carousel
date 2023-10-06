@@ -1,0 +1,16 @@
+{$ENV}-rpc.fluence.dev:{$PORT} {
+  tls /secrets/cert.pem /secrets/key.pem
+
+  log {
+    output file /alloc/data/access.log {
+      roll_size 50mb
+      roll_keep 2
+    }
+  }
+
+  rewrite * /v2/{$SECRET}/{uri}
+
+  reverse_proxy {$API} {
+    header_up Host polygon-mumbai.g.alchemy.com
+  }
+}

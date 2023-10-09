@@ -25,6 +25,7 @@ if [[ $FLUENCE_SYSTEM_SERVICES__ENABLE == *"aqua-ipfs"* ]]; then
       fi
       echo "Waiting for IPFS to be up..." >&2
       sleep 10
+      ((RETRY_COUNT--))
     done
   done
 fi

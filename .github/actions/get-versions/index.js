@@ -52,7 +52,9 @@ async function run() {
 
     // Add 'nox' from local file
     versions.nox = file.nox;
-    versions.redis = file.redis;
+
+    // Add 'faucet'
+    versions.faucet = file.faucet;
 
     console.log(JSON.stringify(versions, null, 2));
     core.setOutput("versions", JSON.stringify(versions));

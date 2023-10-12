@@ -258,17 +258,25 @@ job "nox" {
       template {
         data        = <<-EOH
         {{- with secret (env "NOMAD_ALLOC_INDEX" | printf "kv/nox/${var.env}/nodes/%s") -}}
+        # nox PeerID private key
         KEY={{ .Data.private }}
+        # private key of the Provider (Signing) Wallet
         FLUENCE_ENV_CONNECTOR_WALLET_KEY={{ .Data.wallet_key }}
         {{- end }}
 
         {{ with secret "kv/nox/${var.env}/connector" -}}
+        # block number from which to start scanning the chain for Deals
+        # should be set to the block number at the time of last environment cleanup
         FLUENCE_ENV_CONNECTOR_FROM_BLOCK={{ .Data.from_block }}
+        # Matcher contract address
         FLUENCE_ENV_CONNECTOR_CONTRACT_ADDRESS={{ .Data.contract_address }}
         {{- end }}
 
         {{ with secret "kv/nox/${var.env}/chain" -}}
+        # blockchain node RPC URL
         FLUENCE_ENV_CONNECTOR_API_ENDPOINT='{{ .Data.api_endpoint }}'
+        # network id of the blockchain network, must correspond to RPC URI
+        FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID=31337
         {{- end -}}
         EOH
         destination = "secrets/node-secrets.env"
@@ -480,11 +488,14 @@ job "nox" {
       template {
         data        = <<-EOH
         {{ with secret "kv/nox/${var.env}/faucet/secret" -}}
+        # private key for the faucet wallet, which make transaction to faucet contract
         FAUCET_PRIVATE_KEY='{{ .Data.private_key }}'
+        # address of the faucet contract
         NEXT_PUBLIC_FAUCET_ADDRESS='{{ .Data.address }}'
         {{- end }}
 
         {{ with secret "kv/nox/${var.env}/chain" -}}
+        # blockchain node RPC URL
         NEXT_PUBLIC_FAUCET_CHAIN_RPC_URL='{{ .Data.api_endpoint }}'
         {{- end -}}
         EOH

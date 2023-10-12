@@ -14,11 +14,15 @@ variable "nox-policy" {
   type = string
 }
 
-variable "promtail-policy" {
+variable "faucet-image" {
   type = string
 }
 
-variable "proxy-policy" {
+variable "faucet-policy" {
+  type = string
+}
+
+variable "promtail-policy" {
   type = string
 }
 
@@ -164,8 +168,6 @@ job "nox" {
         FLUENCE_ENV_AQUA_IPFS_EXTERNAL_API_MULTIADDR = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
         FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
 
-        FLUENCE_ENV_CONNECTOR_API_ENDPOINT = "https://${var.env}-rpc.fluence.dev"
-
         FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider,registry"
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = "10"
         FLUENCE_MAX_SPELL_PARTICLE_TTL                       = "9s"
@@ -263,6 +265,7 @@ job "nox" {
         {{ with secret "kv/nox/${var.env}/connector" -}}
         FLUENCE_ENV_CONNECTOR_FROM_BLOCK={{ .Data.from_block }}
         FLUENCE_ENV_CONNECTOR_CONTRACT_ADDRESS={{ .Data.contract_address }}
+        FLUENCE_ENV_CONNECTOR_API_ENDPOINT='{{ .Data.api_endpoint }}/v2/{{ .Data.api_secret }}'
         {{- end -}}
         EOH
         destination = "secrets/node-secrets.env"
@@ -408,93 +411,85 @@ job "nox" {
     }
   }
 
-  group "rpc-proxy" {
+  group "faucet" {
+    ephemeral_disk {
+      migrate = true
+      size    = 500
+    }
+
     network {
-      port "http" {}
+      port "http" {
+        to = 3000
+      }
     }
 
     service {
-      name = "${var.env}-rpc"
+      name = "faucet"
       port = "http"
 
       tags = [
         "traefik.enable=true",
-        "traefik.tcp.routers.rpc-proxy.entrypoints=https",
-        "traefik.tcp.routers.rpc-proxy.rule=HostSNI(`${var.env}-rpc.fluence.dev`)",
-        "traefik.tcp.routers.rpc-proxy.tls.passthrough=true",
+        "traefik.http.routers.faucet.entrypoints=https",
+        "traefik.http.routers.faucet.rule=Host(`faucet-${var.env}.fluence.dev`)",
       ]
     }
 
-    task "caddy" {
+    task "faucet" {
       driver = "docker"
 
-      env {
-        PORT = NOMAD_PORT_http
-        ENV  = var.env
-      }
+      kill_timeout = "10s"
 
       vault {
         policies = [
-          var.proxy-policy,
+          var.faucet-policy
         ]
       }
 
+      env {
+        FAUCET_TIMEOUT   = "60"
+        FAUCET_USD_VALUE = "100"
+        FAUCET_FLT_VALUE = "100"
+        FAUCET_DATA_DIR  = "/alloc/data"
+      }
+
       config {
-        image = "caddy:2-alpine"
+        image = var.faucet-image
 
         ports = [
           "http",
         ]
-
-        volumes = [
-          "local/Caddyfile:/etc/caddy/Caddyfile",
-        ]
       }
 
       template {
         data        = <<-EOH
-        {{ key "configs/fluence/nox/Caddyfile" }}
+        {{ with secret "kv/nox/${var.env}/faucet/auth0" -}}
+        AUTH0_SECRET='{{ .Data.secret }}'
+        AUTH0_BASE_URL='https://faucet-${var.env}.fluence.dev'
+        AUTH0_ISSUER_BASE_URL='{{ .Data.issuer_base_url }}'
+        AUTH0_CLIENT_ID='{{ .Data.client_id }}'
+        AUTH0_CLIENT_SECRET='{{ .Data.client_secret }}'
+        {{- end }}
         EOH
-        destination = "local/Caddyfile"
-      }
-
-      template {
-        data        = <<-EOH
-        {{- with secret "kv/nox/${var.env}/connector" -}}
-        API='{{ .Data.api_endpoint }}'
-        SECRET='{{ .Data.api_secret }}'
-        {{- end -}}
-        EOH
-        destination = "secrets/api.env"
+        destination = "secrets/auth0.env"
         env         = true
       }
 
       template {
-        data = <<-EOH
-        {{- with secret "kv/certs/fluence.dev/wildcard" -}}
-        {{ .Data.ca_bundle }}{{ end }}
+        data        = <<-EOH
+        {{ with secret "kv/nox/${var.env}/faucet/chain" -}}
+        FAUCET_PRIVATE_KEY='{{ .Data.private_key }}'
+        NEXT_PUBLIC_FAUCET_CHAIN_RPC_URL='{{ .Data.chain_url }}'
+        NEXT_PUBLIC_FAUCET_ADDRESS='{{ .Data.address }}'
+        {{- end }}
         EOH
-
-        destination = "secrets/cert.pem"
-        change_mode = "restart"
-        splay       = "10m"
-      }
-
-      template {
-        data = <<-EOH
-        {{- with secret "kv/certs/fluence.dev/wildcard" -}}
-        {{ .Data.private_key }}{{ end }}
-        EOH
-
-        destination = "secrets/key.pem"
-        change_mode = "restart"
-        splay       = "10m"
+        destination = "secrets/chain.env"
+        env         = true
       }
 
       resources {
-        cpu        = 50
-        memory     = 64
-        memory_max = 128
+        cpu        = 100
+        memory     = 128
+        memory_max = 256
       }
     }
   }

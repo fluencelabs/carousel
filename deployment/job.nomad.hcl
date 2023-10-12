@@ -265,7 +265,10 @@ job "nox" {
         {{ with secret "kv/nox/${var.env}/connector" -}}
         FLUENCE_ENV_CONNECTOR_FROM_BLOCK={{ .Data.from_block }}
         FLUENCE_ENV_CONNECTOR_CONTRACT_ADDRESS={{ .Data.contract_address }}
-        FLUENCE_ENV_CONNECTOR_API_ENDPOINT='{{ .Data.api_endpoint }}/v2/{{ .Data.api_secret }}'
+        {{- end }}
+
+        {{ with secret "kv/nox/${var.env}/chain" -}}
+        FLUENCE_ENV_CONNECTOR_API_ENDPOINT='{{ .Data.api_endpoint }}'
         {{- end -}}
         EOH
         destination = "secrets/node-secrets.env"
@@ -476,11 +479,14 @@ job "nox" {
 
       template {
         data        = <<-EOH
-        {{ with secret "kv/nox/${var.env}/faucet/chain" -}}
+        {{ with secret "kv/nox/${var.env}/faucet/secret" -}}
         FAUCET_PRIVATE_KEY='{{ .Data.private_key }}'
-        NEXT_PUBLIC_FAUCET_CHAIN_RPC_URL='{{ .Data.chain_url }}'
         NEXT_PUBLIC_FAUCET_ADDRESS='{{ .Data.address }}'
         {{- end }}
+
+        {{ with secret "kv/nox/${var.env}/chain" -}}
+        NEXT_PUBLIC_FAUCET_CHAIN_RPC_URL='{{ .Data.api_endpoint }}'
+        {{- end -}}
         EOH
         destination = "secrets/chain.env"
         env         = true

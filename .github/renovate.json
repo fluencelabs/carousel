@@ -22,7 +22,8 @@
       "matchStringsStrategy": "any",
       "datasourceTemplate": "npm",
       "versioningTemplate": "semver",
-      "depNameTemplate": "cli"
+      "depNameTemplate": "cli",
+      "respectLatest": false
     },
     {
       "fileMatch": [

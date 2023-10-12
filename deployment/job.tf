@@ -41,20 +41,6 @@ resource "vault_policy" "nox" {
   EOT
 }
 
-resource "vault_policy" "proxy" {
-  name   = "${terraform.workspace}/nox/proxy"
-  policy = <<-EOT
-    path "kv/nox/${terraform.workspace}/connector"
-    {
-      capabilities = ["read"]
-    }
-    path "kv/certs/fluence.dev/wildcard"
-    {
-      capabilities = ["read"]
-    }
-  EOT
-}
-
 resource "vault_policy" "promtail" {
   name   = "${terraform.workspace}/nox/promtail"
   policy = <<-EOT
@@ -111,7 +97,6 @@ resource "nomad_job" "nox" {
     nomad_csi_volume.ipfs,
     vault_policy.nox,
     vault_policy.promtail,
-    vault_policy.proxy,
     consul_keys.configs,
   ]
 
@@ -127,7 +112,6 @@ resource "nomad_job" "nox" {
       nox-image       = var.nox
       nox-policy      = "${terraform.workspace}/nox"
       promtail-policy = "${terraform.workspace}/nox/promtail"
-      proxy-policy    = "${terraform.workspace}/nox/proxy"
     }
   }
 }
@@ -144,13 +128,6 @@ resource "cloudflare_record" "nox" {
 resource "cloudflare_record" "ipfs" {
   zone_id = data.cloudflare_zone.fluence_dev.zone_id
   name    = "${terraform.workspace}-ipfs"
-  value   = data.terraform_remote_state.state.outputs.ingress_ip4
-  type    = "A"
-}
-
-resource "cloudflare_record" "rpc-proxy" {
-  zone_id = data.cloudflare_zone.fluence_dev.zone_id
-  name    = "${terraform.workspace}-rpc"
   value   = data.terraform_remote_state.state.outputs.ingress_ip4
   type    = "A"
 }

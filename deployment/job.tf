@@ -46,6 +46,10 @@ resource "vault_policy" "faucet" {
     {
       capabilities = ["read"]
     }
+    path "kv/nox/${terraform.workspace}/chain"
+    {
+      capabilities = ["read"]
+    }
   EOT
 }
 

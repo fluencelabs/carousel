@@ -17,7 +17,7 @@ scrape_configs:
       - labels:
           source: "nox"
           instance: "${INSTANCE}"
-          env: "stage"
+          env: "${NOMAD_REGION}"
           __path__: "${NOMAD_ALLOC_DIR}/logs/nox.stdout.*"
     pipeline_stages:
       - logfmt:

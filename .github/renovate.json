@@ -23,7 +23,18 @@
       "datasourceTemplate": "npm",
       "versioningTemplate": "semver",
       "depNameTemplate": "cli"
-    }
+    },
+    {
+      "fileMatch": [
+        "^versions\\.json$"
+      ],
+      "matchStrings": [
+        "\"faucet\": \"(?<lookupName>fluencelabs/faucet):(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "semver",
+      "depNameTemplate": "faucet"
+    },
   ],
   "packageRules": [
     {

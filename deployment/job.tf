@@ -8,6 +8,11 @@ variable "nox" {
   type        = string
 }
 
+variable "faucet" {
+  description = "faucet docker image"
+  type        = string
+}
+
 resource "consul_keys" "configs" {
   # nox config
   key {
@@ -22,19 +27,22 @@ resource "consul_keys" "configs" {
     value  = file("promtail.yml")
     delete = true
   }
-
-  # proxy config
-  key {
-    path   = "configs/fluence/nox/Caddyfile"
-    value  = file("proxy.Caddyfile")
-    delete = true
-  }
 }
 
 resource "vault_policy" "nox" {
   name   = "${terraform.workspace}/nox"
   policy = <<-EOT
     path "kv/nox/${terraform.workspace}/*"
+    {
+      capabilities = ["read"]
+    }
+  EOT
+}
+
+resource "vault_policy" "faucet" {
+  name   = "${terraform.workspace}/nox/faucet"
+  policy = <<-EOT
+    path "kv/nox/${terraform.workspace}/faucet/*"
     {
       capabilities = ["read"]
     }
@@ -96,6 +104,7 @@ resource "nomad_job" "nox" {
     nomad_csi_volume.nox,
     nomad_csi_volume.ipfs,
     vault_policy.nox,
+    vault_policy.faucet,
     vault_policy.promtail,
     consul_keys.configs,
   ]
@@ -111,6 +120,8 @@ resource "nomad_job" "nox" {
       replicas        = var.replicas
       nox-image       = var.nox
       nox-policy      = "${terraform.workspace}/nox"
+      faucet-image    = var.faucet
+      faucet-policy   = "${terraform.workspace}/nox/faucet"
       promtail-policy = "${terraform.workspace}/nox/promtail"
     }
   }
@@ -128,6 +139,13 @@ resource "cloudflare_record" "nox" {
 resource "cloudflare_record" "ipfs" {
   zone_id = data.cloudflare_zone.fluence_dev.zone_id
   name    = "${terraform.workspace}-ipfs"
+  value   = data.terraform_remote_state.state.outputs.ingress_ip4
+  type    = "A"
+}
+
+resource "cloudflare_record" "faucet" {
+  zone_id = data.cloudflare_zone.fluence_dev.zone_id
+  name    = "faucet-${terraform.workspace}"
   value   = data.terraform_remote_state.state.outputs.ingress_ip4
   type    = "A"
 }

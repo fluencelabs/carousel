@@ -90,6 +90,15 @@ jobs:
             --sha "$(git rev-parse --short HEAD)" \
             --channel ${{ inputs.env }} --no-xz --indexes
 
+      - name: Promote cli as stable
+        if: inputs.env == 'kras'
+        run: |
+          yarn oclif promote \
+            -t linux-x64,darwin-x64,darwin-arm64 \
+            --version ${{ needs.tag.outputs.cli_version }} \
+            --sha "$(git rev-parse --short HEAD)" \
+            --channel stable --no-xz --indexes
+
   npm:
     runs-on: ubuntu-latest
     name: "Tag npm packages"
@@ -127,11 +136,27 @@ jobs:
             npm dist-tag add ${package}@${version} ${{ inputs.env }}
           done < <(echo '${{ needs.tag.outputs.npm }}' | jq -r '.[] | "\(.name) \(.version)"')
 
+      - name: Tag npm packages as latest
+        if: inputs.env == 'kras'
+        run: |
+          # Tag npm packages
+          while read -r package version; do
+            echo "Promoting ${package}@${version} to latest"
+            npm dist-tag add ${package}@${version} latest
+          done < <(echo '${{ needs.tag.outputs.npm }}' | jq -r '.[] | "\(.name) \(.version)"')
+
       - name: Tag fluence cli
         run: |
           # Tag fluence cli
           echo "Tagging @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} as ${{ inputs.env }}"
           npm dist-tag add @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} ${{ inputs.env }}
+
+      - name: Tag fluence cli as latest
+        if: inputs.env == 'kras'
+        run: |
+          # Tag fluence cli
+          echo "Tagging @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} as latest"
+          npm dist-tag add @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} latest
 
   docker:
     runs-on: ubuntu-latest
@@ -167,4 +192,58 @@ jobs:
         uses: akhilerm/tag-push-action@v2.1.0
         with:
           src: docker.io/fluencelabs/nox:${{ needs.tag.outputs.nox }}
-          dst: docker.io/fluencelabs/nox:${{ inputs.env }}
+          dst: |
+            docker.io/fluencelabs/nox:${{ inputs.env }}
+
+      - name: Retag minimal
+        uses: akhilerm/tag-push-action@v2.1.0
+        with:
+          src: docker.io/fluencelabs/nox:minimal_${{ needs.tag.outputs.nox }}
+          dst: |
+            docker.io/fluencelabs/nox:minimal_${{ inputs.env }}
+
+      - name: Retag ipfs
+        uses: akhilerm/tag-push-action@v2.1.0
+        with:
+          src: docker.io/fluencelabs/nox:ipfs_${{ needs.tag.outputs.nox }}
+          dst: |
+            docker.io/fluencelabs/nox:ipfs_${{ inputs.env }}
+
+      - name: Retag rich
+        uses: akhilerm/tag-push-action@v2.1.0
+        with:
+          src: docker.io/fluencelabs/nox:rich_${{ needs.tag.outputs.nox }}
+          dst: |
+            docker.io/fluencelabs/nox:rich_${{ inputs.env }}
+
+      - name: Retag image as latest
+        if: inputs.env == 'kras'
+        uses: akhilerm/tag-push-action@v2.1.0
+        with:
+          src: docker.io/fluencelabs/nox:${{ needs.tag.outputs.nox }}
+          dst: |
+            docker.io/fluencelabs/nox:latest
+
+      - name: Retag minimal as latest
+        if: inputs.env == 'kras'
+        uses: akhilerm/tag-push-action@v2.1.0
+        with:
+          src: docker.io/fluencelabs/nox:minimal_${{ needs.tag.outputs.nox }}
+          dst: |
+            docker.io/fluencelabs/nox:minimal
+
+      - name: Retag ipfs as latest
+        if: inputs.env == 'kras'
+        uses: akhilerm/tag-push-action@v2.1.0
+        with:
+          src: docker.io/fluencelabs/nox:ipfs_${{ needs.tag.outputs.nox }}
+          dst: |
+            docker.io/fluencelabs/nox:ipfs
+
+      - name: Retag rich as latest
+        if: inputs.env == 'kras'
+        uses: akhilerm/tag-push-action@v2.1.0
+        with:
+          src: docker.io/fluencelabs/nox:rich_${{ needs.tag.outputs.nox }}
+          dst: |
+            docker.io/fluencelabs/nox:rich

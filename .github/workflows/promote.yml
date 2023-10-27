@@ -90,6 +90,15 @@ jobs:
             --sha "$(git rev-parse --short HEAD)" \
             --channel ${{ inputs.env }} --no-xz --indexes
 
+      - name: Promote cli as latest
+        if: inputs.env == 'kras'
+        run: |
+          yarn oclif promote \
+            -t linux-x64,darwin-x64,darwin-arm64 \
+            --version ${{ needs.tag.outputs.cli_version }} \
+            --sha "$(git rev-parse --short HEAD)" \
+            --channel latest --no-xz --indexes
+
       - name: Promote cli as stable
         if: inputs.env == 'kras'
         run: |
@@ -145,6 +154,15 @@ jobs:
             npm dist-tag add ${package}@${version} latest
           done < <(echo '${{ needs.tag.outputs.npm }}' | jq -r '.[] | "\(.name) \(.version)"')
 
+      - name: Tag npm packages as stable
+        if: inputs.env == 'kras'
+        run: |
+          # Tag npm packages
+          while read -r package version; do
+            echo "Promoting ${package}@${version} to stable"
+            npm dist-tag add ${package}@${version} stable
+          done < <(echo '${{ needs.tag.outputs.npm }}' | jq -r '.[] | "\(.name) \(.version)"')
+
       - name: Tag fluence cli
         run: |
           # Tag fluence cli
@@ -157,6 +175,13 @@ jobs:
           # Tag fluence cli
           echo "Tagging @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} as latest"
           npm dist-tag add @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} latest
+
+      - name: Tag fluence cli as stable
+        if: inputs.env == 'kras'
+        run: |
+          # Tag fluence cli
+          echo "Tagging @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} as stabe"
+          npm dist-tag add @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} stable
 
   docker:
     runs-on: ubuntu-latest

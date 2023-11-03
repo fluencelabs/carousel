@@ -144,9 +144,6 @@ jobs:
             terraform taint "nomad_csi_volume.nox[${i}]"
           done
 
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
-
       - name: terraform plan
         id: plan
         run: terraform plan -no-color

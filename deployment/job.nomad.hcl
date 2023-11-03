@@ -171,7 +171,9 @@ job "nox" {
         FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider,registry"
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = "10"
         FLUENCE_MAX_SPELL_PARTICLE_TTL                       = "9s"
-        FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID         = "80001"
+
+        # network id of the blockchain network, must correspond to RPC URI
+        FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID = "80001"
 
         FLUENCE_CONFIG      = "/local/Config.toml"
         FLUENCE_LOG__FORMAT = "logfmt"
@@ -275,8 +277,6 @@ job "nox" {
         {{ with secret "kv/nox/${var.env}/chain" -}}
         # blockchain node RPC URL
         FLUENCE_ENV_CONNECTOR_API_ENDPOINT='{{ .Data.api_endpoint }}'
-        # network id of the blockchain network, must correspond to RPC URI
-        FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID=31337
         {{- end -}}
         EOH
         destination = "secrets/node-secrets.env"

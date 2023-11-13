@@ -117,6 +117,11 @@ resource "nomad_job" "nox" {
   detach           = false
   purge_on_destroy = true
 
+  timeouts {
+    create = "15m"
+    update = "15m"
+  }
+
   hcl2 {
     allow_fs = true
     vars = {

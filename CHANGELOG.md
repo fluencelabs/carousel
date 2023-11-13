@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.0.4](https://github.com/fluencelabs/carousel/compare/v0.0.3...v0.0.4) (2023-11-13)
+
+
+### Bug Fixes
+
+* **deps:** update dependency cli to v0.11.3 ([#55](https://github.com/fluencelabs/carousel/issues/55)) ([0add260](https://github.com/fluencelabs/carousel/commit/0add260e782474c9e6f7eac0068b4066f79ced91))
+* **deps:** update dependency cli to v0.9.1 ([#34](https://github.com/fluencelabs/carousel/issues/34)) ([0b479b9](https://github.com/fluencelabs/carousel/commit/0b479b9cdde9df17378940e7f29acb438fbae83b))
+* Setup caddy as a proxy to chain RPC ([#38](https://github.com/fluencelabs/carousel/issues/38)) ([daec7fb](https://github.com/fluencelabs/carousel/commit/daec7fbe48849407f5771322edd6fc5b4e62b080))
+
 ## [0.0.3](https://github.com/fluencelabs/carousel/compare/v0.0.2...v0.0.3) (2023-09-29)
 
 

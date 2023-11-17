@@ -492,11 +492,12 @@ job "nox" {
         FAUCET_PRIVATE_KEY='{{ .Data.private_key }}'
         # address of the faucet contract
         NEXT_PUBLIC_FAUCET_ADDRESS='{{ .Data.address }}'
+        NEXT_PUBLIC_CHAIN_ID=80001
         {{- end }}
 
         {{ with secret "kv/nox/${var.env}/chain" -}}
         # blockchain node RPC URL
-        NEXT_PUBLIC_FAUCET_CHAIN_RPC_URL='{{ .Data.api_endpoint }}'
+        FAUCET_CHAIN_RPC_URL='{{ .Data.api_endpoint }}'
         {{- end -}}
         EOH
         destination = "secrets/chain.env"

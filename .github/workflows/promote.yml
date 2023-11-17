@@ -38,7 +38,7 @@ jobs:
         uses: ./.github/actions/get-versions
 
       - name: Tag commit
-        uses: richardsimko/update-tag@v1.0.10
+        uses: richardsimko/update-tag@v1.0.11
         with:
           tag_name: ${{ inputs.env }}
         env:

@@ -118,7 +118,7 @@ jobs:
           done < "env"
 
       - name: Setup terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
 
       - name: terraform init
         id: init
@@ -266,7 +266,7 @@ jobs:
           done < "env"
 
       - name: Setup terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
 
       - name: terraform init
         id: init

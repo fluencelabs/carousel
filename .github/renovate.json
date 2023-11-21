@@ -35,7 +35,7 @@
       "datasourceTemplate": "docker",
       "versioningTemplate": "semver",
       "depNameTemplate": "faucet"
-    },
+    }
   ],
   "packageRules": [
     {

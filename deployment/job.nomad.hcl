@@ -6,6 +6,10 @@ variable "replicas" {
   type = string
 }
 
+variable "decider-period" {
+  type = string
+}
+
 variable "nox-image" {
   type = string
 }
@@ -169,7 +173,7 @@ job "nox" {
         FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
 
         FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider,registry"
-        FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = "10"
+        FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = var.decider-period
         FLUENCE_MAX_SPELL_PARTICLE_TTL                       = "9s"
 
         # network id of the blockchain network, must correspond to RPC URI

@@ -47,10 +47,12 @@ jobs:
       NOMAD_NAMESPACE: fluence
       NOMAD_REGION: ${{ vars.ENV }}
       TF_VAR_replicas: ${{ vars.REPLICAS }}
+      TF_VAR_decider_period: ${{ vars.DECIDER_PERIOD }}
 
     outputs:
       ENV: ${{ vars.ENV }}
       REPLICAS: ${{ vars.REPLICAS }}
+      DECIDER_PERIOD: ${{ vars.DECIDER_PERIOD }}
 
       npm: ${{ steps.cli.outputs.npm }}
       nox: ${{ steps.cli.outputs.nox }}
@@ -209,6 +211,7 @@ jobs:
       NOMAD_NAMESPACE: fluence
       NOMAD_REGION: ${{ needs.deploy.outputs.ENV }}
       TF_VAR_replicas: ${{ needs.deploy.outputs.REPLICAS }}
+      TF_VAR_decider_period: ${{ deeds.deploy.outputs.DECIDER_PERIOD }}
 
     permissions:
       contents: read

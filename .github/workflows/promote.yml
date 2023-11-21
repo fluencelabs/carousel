@@ -44,6 +44,26 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  tag-cli:
+    if: inputs.env == 'kras'
+    name: "Tag cli release as stable"
+    needs: tag
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout cli repo
+        uses: actions/checkout@v4
+        with:
+          repository: fluencelabs/cli
+          ref: ${{ needs.tag.outputs.cli_tag }}
+
+      - name: Tag commit
+        uses: richardsimko/update-tag@v1.0.11
+        with:
+          tag_name: stable
+        env:
+          GITHUB_TOKEN: ${{ secrets.FLUENCEBOT_RELEASE_PLEASE_PAT }}
+
   cli:
     name: "Promote cli"
     runs-on: ubuntu-latest

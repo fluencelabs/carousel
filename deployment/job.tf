@@ -3,6 +3,11 @@ variable "replicas" {
   type        = string
 }
 
+variable "decider_period" {
+  description = "decider poll period"
+  type        = string
+}
+
 variable "nox" {
   description = "nox docker image"
   type        = string
@@ -127,6 +132,7 @@ resource "nomad_job" "nox" {
     vars = {
       env             = terraform.workspace
       replicas        = var.replicas
+      decider-period  = var.decider_period
       nox-image       = var.nox
       nox-policy      = "${terraform.workspace}/nox"
       faucet-image    = var.faucet

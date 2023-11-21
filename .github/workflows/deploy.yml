@@ -211,7 +211,7 @@ jobs:
       NOMAD_NAMESPACE: fluence
       NOMAD_REGION: ${{ needs.deploy.outputs.ENV }}
       TF_VAR_replicas: ${{ needs.deploy.outputs.REPLICAS }}
-      TF_VAR_decider_period: ${{ deeds.deploy.outputs.DECIDER_PERIOD }}
+      TF_VAR_decider_period: ${{ needs.deploy.outputs.DECIDER_PERIOD }}
 
     permissions:
       contents: read

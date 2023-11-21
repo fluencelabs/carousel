@@ -55,16 +55,6 @@ job "nox" {
       }
       port "metrics" {}
 
-      port "ipfs_swarm" {
-        host_network = "public"
-      }
-      port "ipfs_api" {
-        host_network = "public"
-      }
-      port "ipfs_gateway" {
-        host_network = "public"
-      }
-
       port "promtail" {}
     }
 
@@ -220,9 +210,6 @@ job "nox" {
           "tcp",
           "ws",
           "metrics",
-          "ipfs_swarm",
-          "ipfs_api",
-          "ipfs_gateway",
         ]
       }
 
@@ -394,7 +381,7 @@ job "nox" {
       }
 
       config {
-        image = "ipfs/go-ipfs:v0.16.0"
+        image = "ipfs/kubo:v0.24.0"
 
         ports = [
           "api",

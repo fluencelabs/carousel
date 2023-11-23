@@ -11,6 +11,10 @@ on:
         description: "Name of the channel/env to promote"
         type: string
         required: true
+    secrets:
+      TAG_TOKEN:
+        description: "Token to create a tag in cli repo"
+        required: false
 
 env:
   CI: true
@@ -62,7 +66,7 @@ jobs:
         with:
           tag_name: stable
         env:
-          GITHUB_TOKEN: ${{ secrets.FLUENCEBOT_RELEASE_PLEASE_PAT }}
+          GITHUB_TOKEN: ${{ secrets.TAG_TOKEN }}
 
   cli:
     name: "Promote cli"

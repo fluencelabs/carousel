@@ -57,3 +57,5 @@ jobs:
     with:
       env: kras
       ref: ${{ needs.release-please.outputs.tag-name }}
+    secrets:
+      TAG_TOKEN: ${{ secrets.FLUENCEBOT_RELEASE_PLEASE_PAT }}

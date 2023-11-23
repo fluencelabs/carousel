@@ -1,5 +1,4 @@
 #! /usr/bin/env sh
-
 if ! (( (ls -1 "$IPFS_PATH" | wc -l) )); then
 	ipfs init
 fi

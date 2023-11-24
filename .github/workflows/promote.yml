@@ -50,6 +50,10 @@ jobs:
     needs: tag
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
       - name: Checkout cli repo
         uses: actions/checkout@v4
@@ -57,12 +61,23 @@ jobs:
           repository: fluencelabs/cli
           ref: ${{ needs.tag.outputs.cli_tag }}
 
+      - name: Import secrets
+        uses: hashicorp/vault-action@v2.7.4
+        with:
+          url: https://vault.fluence.dev
+          path: jwt/github
+          role: ci
+          method: jwt
+          jwtGithubAudience: "https://github.com/fluencelabs"
+          jwtTtl: 300
+          exportToken: false
+          secrets: |
+            kv/github/tokens/fluencebot token | GITHUB_TOKEN
+
       - name: Tag commit
         uses: richardsimko/update-tag@v1.0.11
         with:
           tag_name: stable
-        env:
-          GITHUB_TOKEN: ${{ secrets.FLUENCEBOT_RELEASE_PLEASE_PAT }}
 
   cli:
     name: "Promote cli"

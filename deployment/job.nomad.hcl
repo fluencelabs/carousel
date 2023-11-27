@@ -164,7 +164,8 @@ job "nox" {
 
         FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider,registry"
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = var.decider-period
-        FLUENCE_MAX_SPELL_PARTICLE_TTL                       = "9s"
+        FLUENCE_MAX_SPELL_PARTICLE_TTL                       = format("%ds", convert(var.decider-period, number) - 1)
+
 
         # network id of the blockchain network, must correspond to RPC URI
         FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID = "80001"

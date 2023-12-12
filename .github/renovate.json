@@ -9,7 +9,7 @@
         "^versions\\.json$"
       ],
       "matchStrings": [
-        "\"nox\": \"(?<lookupName>fluencelabs/nox):rich_(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+        "\"nox\": \"(?<lookupName>fluencelabs/nox):(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
       ],
       "datasourceTemplate": "docker",
       "versioningTemplate": "semver",

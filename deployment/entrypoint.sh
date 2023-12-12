@@ -7,14 +7,6 @@ check_ipfs() {
   return $?
 }
 
-if [[ -z $CERAMIC_HOST ]]; then
-  echo "\$CERAMIC_HOST is unset. Skipping ceramic CLI initialization" >&2
-else
-  echo "Setting ceramic url to $CERAMIC_HOST" >&2
-  ceramic config set ceramicHost "$CERAMIC_HOST"
-  glaze config:set ceramic-url "$CERAMIC_HOST"
-fi
-
 if [[ $FLUENCE_SYSTEM_SERVICES__ENABLE == *"aqua-ipfs"* ]]; then
   RETRY_COUNT=${RETRY_COUNT:-5}
   until check_ipfs "$FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR"; do

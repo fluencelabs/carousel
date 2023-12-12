@@ -1,5 +1,5 @@
 {
-  "nox": "fluencelabs/nox:rich_0.4.2",
+  "nox": "fluencelabs/nox:0.16.5",
   "faucet": "fluencelabs/faucet:0.2.1",
   "cli": "@fluencelabs/cli@0.13.0"
 }

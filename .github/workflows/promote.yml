@@ -255,27 +255,6 @@ jobs:
           dst: |
             docker.io/fluencelabs/nox:${{ inputs.env }}
 
-      - name: Retag minimal
-        uses: akhilerm/tag-push-action@v2.1.0
-        with:
-          src: docker.io/fluencelabs/nox:minimal_${{ needs.tag.outputs.nox }}
-          dst: |
-            docker.io/fluencelabs/nox:minimal_${{ inputs.env }}
-
-      - name: Retag ipfs
-        uses: akhilerm/tag-push-action@v2.1.0
-        with:
-          src: docker.io/fluencelabs/nox:ipfs_${{ needs.tag.outputs.nox }}
-          dst: |
-            docker.io/fluencelabs/nox:ipfs_${{ inputs.env }}
-
-      - name: Retag rich
-        uses: akhilerm/tag-push-action@v2.1.0
-        with:
-          src: docker.io/fluencelabs/nox:rich_${{ needs.tag.outputs.nox }}
-          dst: |
-            docker.io/fluencelabs/nox:rich_${{ inputs.env }}
-
       - name: Retag image as latest
         if: inputs.env == 'kras'
         uses: akhilerm/tag-push-action@v2.1.0
@@ -283,27 +262,3 @@ jobs:
           src: docker.io/fluencelabs/nox:${{ needs.tag.outputs.nox }}
           dst: |
             docker.io/fluencelabs/nox:latest
-
-      - name: Retag minimal as latest
-        if: inputs.env == 'kras'
-        uses: akhilerm/tag-push-action@v2.1.0
-        with:
-          src: docker.io/fluencelabs/nox:minimal_${{ needs.tag.outputs.nox }}
-          dst: |
-            docker.io/fluencelabs/nox:minimal
-
-      - name: Retag ipfs as latest
-        if: inputs.env == 'kras'
-        uses: akhilerm/tag-push-action@v2.1.0
-        with:
-          src: docker.io/fluencelabs/nox:ipfs_${{ needs.tag.outputs.nox }}
-          dst: |
-            docker.io/fluencelabs/nox:ipfs
-
-      - name: Retag rich as latest
-        if: inputs.env == 'kras'
-        uses: akhilerm/tag-push-action@v2.1.0
-        with:
-          src: docker.io/fluencelabs/nox:rich_${{ needs.tag.outputs.nox }}
-          dst: |
-            docker.io/fluencelabs/nox:rich

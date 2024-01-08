@@ -171,7 +171,7 @@ job "nox" {
         FLUENCE_LOG__FORMAT = "logfmt"
 
         CERAMIC_HOST = "https://ceramic-${NOMAD_REGION}.fluence.dev"
-        RUST_LOG     = "info,ipfs_effector=off,ipfs_pure=off,run-console=info"
+        RUST_LOG     = "info,ipfs_effector=off,ipfs_pure=off,chain_connector=debug,run-console=debug"
 
         FLUENCE_HTTP_PORT = NOMAD_PORT_metrics
       }

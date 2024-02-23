@@ -167,7 +167,7 @@ job "nox" {
         FLUENCE_CONFIG      = "/local/Config.toml"
         FLUENCE_LOG__FORMAT = "logfmt"
 
-        RUST_LOG     = "info,ipfs_effector=off,ipfs_pure=off,chain_connector=debug,run-console=debug"
+        RUST_LOG = "info,ipfs_effector=off,ipfs_pure=off,chain_connector=debug,run-console=debug"
 
         FLUENCE_HTTP_PORT = NOMAD_PORT_metrics
       }
@@ -444,10 +444,14 @@ job "nox" {
       }
 
       env {
-        FAUCET_TIMEOUT   = "60"
-        FAUCET_USD_VALUE = "100"
-        FAUCET_FLT_VALUE = "100"
+        FAUCET_TIMEOUT   = "30"
+        FAUCET_USD_VALUE = "10"
+        FAUCET_FLT_VALUE = "0.01"
         FAUCET_DATA_DIR  = "/alloc/data"
+
+        NEXT_PUBLIC_CHAIN_NAME      = "Fluence ${var.env} Network"
+        NEXT_PUBLIC_BLOCK_EXPLORER  = "https://blockscout-${var.env}.fluence.dev"
+        NEXT_PUBLIC_NATIVE_CURRENCY = "tFLT"
       }
 
       config {

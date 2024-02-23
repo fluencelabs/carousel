@@ -248,22 +248,22 @@ job "nox" {
         # nox PeerID private key
         KEY={{ .Data.private }}
         # private key of the Provider (Signing) Wallet
-        FLUENCE_ENV_CONNECTOR_WALLET_KEY={{ .Data.wallet_key }}
-        {{- end }}
-
-        {{ with secret "kv/nox/${var.env}/connector" -}}
-        # block number from which to start scanning the chain for Deals
-        # should be set to the block number at the time of last environment cleanup
-        FLUENCE_ENV_CONNECTOR_FROM_BLOCK={{ .Data.from_block }}
-        # Matcher contract address
-        FLUENCE_ENV_CONNECTOR_CONTRACT_ADDRESS={{ .Data.contract_address }}
+        FLUENCE_ENV_CONNECTOR_WALLET_KEY='{{ .Data.wallet_key }}'
+        FLUENCE_CHAIN_CONFIG__WALLET_KEY='{{ .Data.wallet_key }}'
         {{- end }}
 
         {{ with secret "kv/nox/${var.env}/chain" -}}
-        # blockchain node RPC URL
+        # legacy settings
         FLUENCE_ENV_CONNECTOR_API_ENDPOINT='{{ .Data.api_endpoint }}'
-        # network id of the blockchain network, must correspond to RPC URI
-        FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID = "{{ .Data.chain_id }}"
+        FLUENCE_ENV_CONNECTOR_CONTRACT_ADDRESS={{ .Data.market_contract_address }}
+        FLUENCE_ENV_CONNECTOR_FROM_BLOCK='{{ .Data.from_block }}'
+        # new settings
+        FLUENCE_CHAIN_CONFIG__HTTP_ENDPOINT='{{ .Data.api_endpoint }}'
+        FLUENCE_CHAIN_CONFIG__CORE_CONTRACT_ADDRESS='{{ .Data.core_contract_address }}'
+        FLUENCE_CHAIN_CONFIG__CC_CONTRACT_ADDRESS='{{ .Data.cc_contract_address }}'
+        FLUENCE_CHAIN_CONFIG__MARKET_CONTRACT_ADDRESS='{{ .Data.market_contract_address }}'
+        FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID='{{ .Data.chain_id }}'
+        FLUENCE_CHAIN_CONFIG__NETWORK_ID='{{ .Data.chain_id }}'
         {{- end -}}
         EOH
         destination = "secrets/node-secrets.env"
@@ -445,8 +445,8 @@ job "nox" {
 
       env {
         FAUCET_TIMEOUT   = "30"
-        FAUCET_USD_VALUE = "10"
-        FAUCET_FLT_VALUE = "0.01"
+        FAUCET_USD_VALUE = "100"
+        FAUCET_FLT_VALUE = "10"
         FAUCET_DATA_DIR  = "/alloc/data"
 
         NEXT_PUBLIC_CHAIN_NAME      = "Fluence ${var.env} Network"

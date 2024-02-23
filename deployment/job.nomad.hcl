@@ -87,7 +87,7 @@ job "nox" {
       tags = [
         "traefik.enable=true",
         "traefik.http.routers.nox-${NOMAD_ALLOC_INDEX}.entrypoints=nox",
-        "traefik.http.routers.nox-${NOMAD_ALLOC_INDEX}.rule=Host(`${NOMAD_ALLOC_INDEX}-${NOMAD_REGION}.fluence.dev`)",
+        "traefik.http.routers.nox-${NOMAD_ALLOC_INDEX}.rule=Host(`${NOMAD_ALLOC_INDEX}-${NOMAD_REGION}.fluence.dev`) || Host(`${NOMAD_ALLOC_INDEX}-dar.fluence.dev`)",
       ]
     }
 

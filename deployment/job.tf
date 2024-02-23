@@ -160,7 +160,7 @@ resource "cloudflare_record" "ipfs" {
 
 resource "cloudflare_record" "faucet" {
   zone_id = data.cloudflare_zone.fluence_dev.zone_id
-  name    = "faucet-${terraform.workspace}"
+  name    = "faucet-dar"
   value   = data.terraform_remote_state.state.outputs.ingress_ip4
   type    = "A"
 }

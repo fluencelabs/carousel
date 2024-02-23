@@ -428,7 +428,7 @@ job "nox" {
       tags = [
         "traefik.enable=true",
         "traefik.http.routers.faucet.entrypoints=https",
-        "traefik.http.routers.faucet.rule=Host(`faucet-${var.env}.fluence.dev`)",
+        "traefik.http.routers.faucet.rule=Host(`faucet-${var.env}.fluence.dev`) || Host(`faucet-dar.fluence.dev`)",
       ]
     }
 
@@ -445,8 +445,8 @@ job "nox" {
 
       env {
         FAUCET_TIMEOUT   = "30"
-        FAUCET_USD_VALUE = "10"
-        FAUCET_FLT_VALUE = "0.01"
+        FAUCET_USD_VALUE = "100"
+        FAUCET_FLT_VALUE = "10"
         FAUCET_DATA_DIR  = "/alloc/data"
 
         NEXT_PUBLIC_CHAIN_NAME      = "Fluence ${var.env} Network"

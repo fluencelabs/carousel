@@ -458,8 +458,8 @@ job "nox" {
         FAUCET_FLT_VALUE = "10"
         FAUCET_DATA_DIR  = "/alloc/data"
 
-        NEXT_PUBLIC_CHAIN_NAME      = "Fluence ${var.env} Network"
-        NEXT_PUBLIC_BLOCK_EXPLORER  = "https://blockscout-${var.env}.fluence.dev"
+        NEXT_PUBLIC_CHAIN_NAME      = "Fluence dar Network"
+        NEXT_PUBLIC_BLOCK_EXPLORER  = "https://blockscout-dar.fluence.dev"
         NEXT_PUBLIC_NATIVE_CURRENCY = "tFLT"
       }
 
@@ -475,7 +475,7 @@ job "nox" {
         data        = <<-EOH
         {{ with secret "kv/nox/${var.env}/faucet/auth0" -}}
         AUTH0_SECRET='{{ .Data.secret }}'
-        AUTH0_BASE_URL='https://faucet-${var.env}.fluence.dev'
+        AUTH0_BASE_URL='https://faucet-dar.fluence.dev'
         AUTH0_ISSUER_BASE_URL='{{ .Data.issuer_base_url }}'
         AUTH0_CLIENT_ID='{{ .Data.client_id }}'
         AUTH0_CLIENT_SECRET='{{ .Data.client_secret }}'

@@ -40,6 +40,15 @@ job "nox" {
   group "nox" {
     count = var.replicas
 
+    constraint {
+      distinct_hosts = true
+    }
+
+    constraint {
+      attribute = node.class
+      value     = "worker"
+    }
+
     update {
       max_parallel      = 6
       healthy_deadline  = "10m"
@@ -151,9 +160,9 @@ job "nox" {
       }
 
       resources {
-        cpu        = 1000
-        memory     = 1000
-        memory_max = 2500
+        cpu        = 10000
+        memory     = 5000
+        memory_max = 10000
       }
 
       env {

@@ -453,7 +453,7 @@ job "nox" {
       }
 
       env {
-        FAUCET_TIMEOUT   = "30"
+        FAUCET_TIMEOUT   = "86400"
         FAUCET_USD_VALUE = "100"
         FAUCET_FLT_VALUE = "10"
         FAUCET_DATA_DIR  = "/alloc/data"

@@ -489,6 +489,7 @@ job "nox" {
         {{ with secret "kv/nox/${var.env}/chain" -}}
         # blockchain node RPC URL
         FAUCET_CHAIN_RPC_URL='{{ .Data.api_endpoint }}'
+        NEXT_PUBLIC_FAUCET_CHAIN_RPC_URL='{{ .Data.api_endpoint }}'
         {{- end -}}
         EOH
         destination = "secrets/chain.env"

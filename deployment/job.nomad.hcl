@@ -164,13 +164,9 @@ job "nox" {
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = var.decider-period
         FLUENCE_MAX_SPELL_PARTICLE_TTL                       = format("%ds", convert(var.decider-period, number) - 1)
 
-        # network id of the blockchain network, must correspond to RPC URI
-        FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID = "80001"
-
         FLUENCE_CONFIG      = "/local/Config.toml"
         FLUENCE_LOG__FORMAT = "logfmt"
 
-        CERAMIC_HOST = "https://ceramic-${NOMAD_REGION}.fluence.dev"
         RUST_LOG     = "info,ipfs_effector=off,ipfs_pure=off,chain_connector=debug,run-console=debug"
 
         FLUENCE_HTTP_PORT = NOMAD_PORT_metrics
@@ -266,6 +262,8 @@ job "nox" {
         {{ with secret "kv/nox/${var.env}/chain" -}}
         # blockchain node RPC URL
         FLUENCE_ENV_CONNECTOR_API_ENDPOINT='{{ .Data.api_endpoint }}'
+        # network id of the blockchain network, must correspond to RPC URI
+        FLUENCE_SYSTEM_SERVICES__DECIDER__NETWORK_ID = "{{ .Data.chain_id }}"
         {{- end -}}
         EOH
         destination = "secrets/node-secrets.env"
@@ -481,7 +479,7 @@ job "nox" {
         FAUCET_PRIVATE_KEY='{{ .Data.private_key }}'
         # address of the faucet contract
         NEXT_PUBLIC_FAUCET_ADDRESS='{{ .Data.address }}'
-        NEXT_PUBLIC_CHAIN_ID=80001
+        NEXT_PUBLIC_CHAIN_ID='{{ .Data.chain_id }}'
         {{- end }}
 
         {{ with secret "kv/nox/${var.env}/chain" -}}

@@ -201,8 +201,8 @@ job "nox" {
           "-f=ed25519",
           "--management-key=${MANAGEMENT_KEY}",
 
-          /* "--aqua-pool-size=${attr.cpu.numcores}", */
-          "--aqua-pool-size=2",
+          "--aqua-pool-size=${attr.cpu.numcores}",
+          #"--aqua-pool-size=2",
 
           "--tcp-port=${NOMAD_PORT_tcp}",
           "--ws-port=${NOMAD_PORT_ws}",

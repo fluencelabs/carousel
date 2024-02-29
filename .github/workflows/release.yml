@@ -42,12 +42,12 @@ jobs:
     with:
       env: stage
 
-  testnet:
+  dar:
     if: needs.release-please.outputs.release-created
     needs: release-please
     uses: ./.github/workflows/deploy.yml
     with:
-      env: testnet
+      env: dar
       ref: ${{ needs.release-please.outputs.tag-name }}
 
   kras:

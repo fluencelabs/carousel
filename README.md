@@ -9,7 +9,7 @@ Continuous Delivery
 
 Or merge renovate PR.
 
-## How to deploy to testnet/kras
+## How to deploy to dar/kras
 
 - merge release PR
 - approve deployment in `Actions` tab

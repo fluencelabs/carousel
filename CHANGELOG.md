@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.1.0](https://github.com/fluencelabs/carousel/compare/v0.0.4...v0.1.0) (2024-02-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* Bump nox to 0.21.2 and cli to 0.15.12 ([#97](https://github.com/fluencelabs/carousel/issues/97))
+
+### Features
+
+* Bump nox to 0.21.2 and cli to 0.15.12 ([#97](https://github.com/fluencelabs/carousel/issues/97)) ([c88d38c](https://github.com/fluencelabs/carousel/commit/c88d38c96211e9e986799891fd531af778923d48))
+
+
+### Bug Fixes
+
+* Set different decider poll period per env (kras=30, testnet,stage=60) ([#80](https://github.com/fluencelabs/carousel/issues/80)) ([ac98f07](https://github.com/fluencelabs/carousel/commit/ac98f07a8fe0b2e8bb3b46373b5dfb4c008e8938))
+* update faucet to v0.2.0 ([#73](https://github.com/fluencelabs/carousel/issues/73)) ([f00c445](https://github.com/fluencelabs/carousel/commit/f00c445b4a213718434a87821c7cef345f9e31f9))
+
 ## [0.0.4](https://github.com/fluencelabs/carousel/compare/v0.0.3...v0.0.4) (2023-11-13)
 
 

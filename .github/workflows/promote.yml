@@ -45,7 +45,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   tag-cli:
-    if: inputs.env == 'kras'
+    if: inputs.env == 'dar'
     name: "Tag cli release as stable"
     needs: tag
     runs-on: ubuntu-latest
@@ -126,7 +126,7 @@ jobs:
             --channel ${{ inputs.env }} --no-xz --indexes
 
       - name: Promote cli as latest
-        if: inputs.env == 'kras'
+        if: inputs.env == 'dar'
         run: |
           yarn oclif promote \
             -t linux-x64,darwin-x64,darwin-arm64 \
@@ -135,7 +135,7 @@ jobs:
             --channel latest --no-xz --indexes
 
       - name: Promote cli as stable
-        if: inputs.env == 'kras'
+        if: inputs.env == 'dar'
         run: |
           yarn oclif promote \
             -t linux-x64,darwin-x64,darwin-arm64 \
@@ -181,7 +181,7 @@ jobs:
           done < <(echo '${{ needs.tag.outputs.npm }}' | jq -r '.[] | "\(.name) \(.version)"')
 
       - name: Tag npm packages as latest
-        if: inputs.env == 'kras'
+        if: inputs.env == 'dar'
         run: |
           # Tag npm packages
           while read -r package version; do
@@ -190,7 +190,7 @@ jobs:
           done < <(echo '${{ needs.tag.outputs.npm }}' | jq -r '.[] | "\(.name) \(.version)"')
 
       - name: Tag npm packages as stable
-        if: inputs.env == 'kras'
+        if: inputs.env == 'dar'
         run: |
           # Tag npm packages
           while read -r package version; do
@@ -205,14 +205,14 @@ jobs:
           npm dist-tag add @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} ${{ inputs.env }}
 
       - name: Tag fluence cli as latest
-        if: inputs.env == 'kras'
+        if: inputs.env == 'dar'
         run: |
           # Tag fluence cli
           echo "Tagging @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} as latest"
           npm dist-tag add @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} latest
 
       - name: Tag fluence cli as stable
-        if: inputs.env == 'kras'
+        if: inputs.env == 'dar'
         run: |
           # Tag fluence cli
           echo "Tagging @fluencelabs/cli@${{ needs.tag.outputs.cli_version }} as stabe"
@@ -256,7 +256,7 @@ jobs:
             docker.io/fluencelabs/nox:${{ inputs.env }}
 
       - name: Retag image as latest
-        if: inputs.env == 'kras'
+        if: inputs.env == 'dar'
         uses: akhilerm/tag-push-action@v2.1.0
         with:
           src: docker.io/fluencelabs/nox:${{ needs.tag.outputs.nox }}

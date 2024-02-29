@@ -87,7 +87,7 @@ jobs:
           echo "cli_version=${{ steps.versions.outputs.cli_version }}" >> $GITHUB_OUTPUT
 
       - name: Get vault token
-        uses: hashicorp/vault-action@v2.7.4
+        uses: hashicorp/vault-action@v3.0.0
         with:
           url: "https://vault.fluence.dev"
           path: jwt/github
@@ -234,7 +234,7 @@ jobs:
         run: echo "TF_VAR_faucet=${{ fromJson(steps.versions.outputs.versions)['faucet'] }}" >> $GITHUB_ENV
 
       - name: Get vault token
-        uses: hashicorp/vault-action@v2.7.4
+        uses: hashicorp/vault-action@v3.0.0
         with:
           url: "https://vault.fluence.dev"
           path: jwt/github
@@ -319,7 +319,7 @@ jobs:
           echo "found any?:" "${{ steps.status.outputs.found }}"
 
       - name: Import secrets
-        uses: hashicorp/vault-action@v2.7.4
+        uses: hashicorp/vault-action@v3.0.0
         with:
           url: https://vault.fluence.dev
           path: jwt/github

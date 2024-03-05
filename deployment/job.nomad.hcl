@@ -191,6 +191,7 @@ job "nox" {
 
         entrypoint = ["/local/entrypoint.sh"]
         args = [
+          "--dev-mode",
           "--allow-private-ips",
           "${BOOTSTRAP}",
           "-x=${attr.unique.network.ip-address}",
@@ -202,7 +203,6 @@ job "nox" {
           "--management-key=${MANAGEMENT_KEY}",
 
           "--aqua-pool-size=${attr.cpu.numcores}",
-          #"--aqua-pool-size=2",
 
           "--tcp-port=${NOMAD_PORT_tcp}",
           "--ws-port=${NOMAD_PORT_ws}",

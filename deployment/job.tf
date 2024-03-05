@@ -13,6 +13,11 @@ variable "nox" {
   type        = string
 }
 
+variable "ccp" {
+  description = "ccp docker image"
+  type        = string
+}
+
 variable "faucet" {
   description = "faucet docker image"
   type        = string
@@ -23,6 +28,13 @@ resource "consul_keys" "configs" {
   key {
     path   = "configs/fluence/nox/Config.toml"
     value  = file("Config.toml")
+    delete = true
+  }
+
+  # ccp config
+  key {
+    path   = "configs/fluence/ccp/Config.toml"
+    value  = file("ccp-config.toml")
     delete = true
   }
 
@@ -68,6 +80,27 @@ resource "vault_policy" "promtail" {
   EOT
 }
 
+resource "nomad_csi_volume" "ccp" {
+  count = var.replicas
+
+  namespace    = "fluence"
+  plugin_id    = "do-csi"
+  volume_id    = "ccp[${count.index}]"
+  name         = "${terraform.workspace}-ccp-${count.index}"
+  capacity_min = "10GiB"
+  capacity_max = "10GiB"
+
+  capability {
+    access_mode     = "single-node-writer"
+    attachment_mode = "file-system"
+  }
+
+  mount_options {
+    fs_type     = "ext4"
+    mount_flags = ["noatime"]
+  }
+}
+
 resource "nomad_csi_volume" "nox" {
   count = var.replicas
 
@@ -111,6 +144,7 @@ resource "nomad_csi_volume" "ipfs" {
 resource "nomad_job" "nox" {
   depends_on = [
     nomad_csi_volume.nox,
+    nomad_csi_volume.ccp,
     nomad_csi_volume.ipfs,
     vault_policy.nox,
     vault_policy.faucet,
@@ -134,6 +168,7 @@ resource "nomad_job" "nox" {
       replicas        = var.replicas
       decider-period  = var.decider_period
       nox-image       = var.nox
+      ccp-image       = var.ccp
       nox-policy      = "${terraform.workspace}/nox"
       faucet-image    = var.faucet
       faucet-policy   = "${terraform.workspace}/nox/faucet"

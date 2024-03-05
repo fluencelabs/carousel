@@ -54,6 +54,12 @@ job "nox" {
         host_network = "public"
       }
       port "metrics" {}
+      port "ccp-metrics" {
+        to = 9384
+      }
+      port "ccp" {
+        to = 9383
+      }
 
       port "promtail" {}
     }
@@ -128,6 +134,14 @@ job "nox" {
     volume "nox" {
       type            = "csi"
       source          = "nox"
+      attachment_mode = "file-system"
+      access_mode     = "single-node-writer"
+      per_alloc       = true
+    }
+
+    volume "ccp" {
+      type            = "csi"
+      source          = "ccp"
       attachment_mode = "file-system"
       access_mode     = "single-node-writer"
       per_alloc       = true
@@ -270,6 +284,50 @@ job "nox" {
         env         = true
       }
     }
+
+    task "ccp" {
+      driver = "docker"
+
+      kill_signal  = "SIGINT"
+      kill_timeout = "30s"
+
+      volume_mount {
+        volume      = "ccp"
+        destination = "/fluence/data"
+      }
+
+      resources {
+        cpu        = 1000
+        memory     = 1000
+        memory_max = 2500
+      }
+
+      env {
+        FLUENCE_CONFIG = "/local/Config.toml"
+      }
+
+      config {
+        image          = var.ccp-image
+        auth_soft_fail = true
+
+        labels {
+          replica = "ccp-${NOMAD_ALLOC_INDEX}"
+        }
+
+        ports = [
+          "ccp",
+          "ccp-metrics",
+        ]
+      }
+
+      template {
+        data        = <<-EOH
+        {{ key "configs/fluence/ccp/Config.toml" }}
+        EOH
+        destination = "local/Config.toml"
+      }
+    }
+
 
     task "promtail" {
       driver = "docker"

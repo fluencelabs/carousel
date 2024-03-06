@@ -1,0 +1,27 @@
+[rpc-endpoint]
+host = "0.0.0.0"
+port = "9383"
+utility-thread-ids = [1]
+
+[prometheus-endpoint]
+host = "0.0.0.0"
+port = "9384"
+
+[optimizations]
+argon2 = "default"
+# large-pages = true
+# hard-aes = true
+# jit = true
+# secure = false
+# argon2-sse3 = true
+# argon2-avx2 = true
+# argon2 = true
+# msr = false
+# threads-per-physical-core = 2
+
+[logs]
+report-hashrate = false
+log-level = "info"
+
+[state]
+path = "/fluence/data"

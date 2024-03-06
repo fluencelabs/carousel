@@ -14,6 +14,10 @@ variable "nox-image" {
   type = string
 }
 
+variable "ccp-image" {
+  type = string
+}
+
 variable "nox-policy" {
   type = string
 }
@@ -40,6 +44,11 @@ job "nox" {
   group "nox" {
     count = var.replicas
 
+    constraint {
+      attribute = node.unique.name
+      value     = "stage-server-0"
+    }
+
     update {
       max_parallel      = 6
       healthy_deadline  = "10m"
@@ -47,6 +56,7 @@ job "nox" {
     }
 
     network {
+      mode = "bridge"
       port "tcp" {
         host_network = "public"
       }
@@ -153,6 +163,11 @@ job "nox" {
       kill_signal  = "SIGINT"
       kill_timeout = "30s"
 
+      lifecycle {
+        hook    = "poststart"
+        sidecar = true
+      }
+
       vault {
         policies = [
           var.nox-policy,
@@ -166,13 +181,17 @@ job "nox" {
 
       resources {
         cpu        = 1000
-        memory     = 1000
-        memory_max = 2500
+        memory     = 5000
+        memory_max = 8500
       }
 
       env {
         FLUENCE_ENV_AQUA_IPFS_EXTERNAL_API_MULTIADDR = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
         FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
+
+        FLUENCE_CHAIN_LISTENER_CONFIG__WS_ENDPOINT       = "wss://ipc-stage.fluence.dev"
+        FLUENCE_CHAIN_LISTENER_CONFIG__CCP_ENDPOINT      = "http://127.0.0.1:9383"
+        FLUENCE_CHAIN_LISTENER_CONFIG__PROOF_POLL_PERIOD = "1s"
 
         FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider,registry"
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = var.decider-period
@@ -291,6 +310,11 @@ job "nox" {
       kill_signal  = "SIGINT"
       kill_timeout = "30s"
 
+      env {
+        CCP_LOG        = "tokio=error,hyper=error,jsonrpsee-server=error,trace"
+        CCP_CONFIG = "/local/Config.toml"
+      }
+
       volume_mount {
         volume      = "ccp"
         destination = "/fluence/data"
@@ -300,10 +324,6 @@ job "nox" {
         cpu        = 1000
         memory     = 1000
         memory_max = 2500
-      }
-
-      env {
-        FLUENCE_CONFIG = "/local/Config.toml"
       }
 
       config {
@@ -322,12 +342,11 @@ job "nox" {
 
       template {
         data        = <<-EOH
-        {{ key "configs/fluence/ccp/Config.toml" }}
+        {{ key "configs/fluence/nox/ccp.Config.toml" }}
         EOH
         destination = "local/Config.toml"
       }
     }
-
 
     task "promtail" {
       driver = "docker"

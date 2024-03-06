@@ -18,13 +18,29 @@ scrape_configs:
           source: "nox"
           instance: "${INSTANCE}"
           env: "${NOMAD_REGION}"
-          __path__: "${NOMAD_ALLOC_DIR}/logs/nox.stdout.*"
+          __path__: "${NOMAD_ALLOC_DIR}/logs/nox.*"
     pipeline_stages:
       - logfmt:
           mapping:
             time:
             level:
             particle_id:
+      - timestamp:
+          source: time
+          format: "RFC3339Nano"
+
+  - job_name: "ccp"
+    static_configs:
+      - labels:
+          source: "ccp"
+          instance: "${INSTANCE}"
+          env: "${NOMAD_REGION}"
+          __path__: "${NOMAD_ALLOC_DIR}/logs/ccp.*"
+    pipeline_stages:
+      - logfmt:
+          mapping:
+            time:
+            level:
       - timestamp:
           source: time
           format: "RFC3339Nano"

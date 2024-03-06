@@ -33,8 +33,8 @@ resource "consul_keys" "configs" {
 
   # ccp config
   key {
-    path   = "configs/fluence/ccp/Config.toml"
-    value  = file("ccp-config.toml")
+    path   = "configs/fluence/nox/ccp.Config.toml"
+    value  = file("ccp.Config.toml")
     delete = true
   }
 

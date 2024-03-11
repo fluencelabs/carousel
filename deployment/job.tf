@@ -158,6 +158,13 @@ resource "cloudflare_record" "ipfs" {
   type    = "A"
 }
 
+resource "cloudflare_record" "ipfs-dar" {
+  zone_id = data.cloudflare_zone.fluence_dev.zone_id
+  name    = "dar-ipfs"
+  value   = data.terraform_remote_state.state.outputs.ingress_ip4
+  type    = "A"
+}
+
 resource "cloudflare_record" "faucet" {
   zone_id = data.cloudflare_zone.fluence_dev.zone_id
   name    = "faucet-dar"

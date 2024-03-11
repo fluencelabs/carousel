@@ -249,7 +249,7 @@ jobs:
           password: ${{ env.DOCKER_PASSWORD }}
 
       - name: Retag image
-        uses: akhilerm/tag-push-action@v2.1.0
+        uses: akhilerm/tag-push-action@v2.2.0
         with:
           src: docker.io/fluencelabs/nox:${{ needs.tag.outputs.nox }}
           dst: |
@@ -257,7 +257,7 @@ jobs:
 
       - name: Retag image as latest
         if: inputs.env == 'dar'
-        uses: akhilerm/tag-push-action@v2.1.0
+        uses: akhilerm/tag-push-action@v2.2.0
         with:
           src: docker.io/fluencelabs/nox:${{ needs.tag.outputs.nox }}
           dst: |

@@ -61,7 +61,7 @@ resource "vault_policy" "faucet" {
 resource "vault_policy" "promtail" {
   name   = "${terraform.workspace}/nox/promtail"
   policy = <<-EOT
-    path "kv/loki/basicauth/promtail"
+    path "kv/loki/basicauth/fluencelabs"
     {
       capabilities = ["read"]
     }

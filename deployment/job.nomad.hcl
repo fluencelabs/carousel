@@ -327,7 +327,7 @@ job "nox" {
 
       template {
         data = <<-EOH
-        {{- with secret "kv/loki/basicauth/promtail" -}}
+        {{- with secret "kv/loki/basicauth/fluencelabs" -}}
         {{ .Data.password }}{{ end }}
         EOH
 
@@ -454,8 +454,8 @@ job "nox" {
 
       env {
         FAUCET_TIMEOUT   = "86400"
-        FAUCET_USD_VALUE = "100"
-        FAUCET_FLT_VALUE = "10"
+        FAUCET_USD_VALUE = "1000"
+        FAUCET_FLT_VALUE = "100"
         FAUCET_DATA_DIR  = "/alloc/data"
 
         NEXT_PUBLIC_CHAIN_NAME      = "Fluence dar Network"

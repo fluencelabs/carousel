@@ -6,9 +6,8 @@ positions:
 
 clients:
   - url: "https://loki.fluence.dev/loki/api/v1/push"
-    tenant_id: "fluencelabs"
     basic_auth:
-      username: "promtail"
+      username: "fluencelabs"
       password_file: "/secrets/auth"
 
 scrape_configs:

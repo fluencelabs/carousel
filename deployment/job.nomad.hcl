@@ -14,6 +14,10 @@ variable "nox-image" {
   type = string
 }
 
+variable "ccp-image" {
+  type = string
+}
+
 variable "nox-policy" {
   type = string
 }
@@ -56,6 +60,7 @@ job "nox" {
     }
 
     network {
+      mode = "bridge"
       port "tcp" {
         host_network = "public"
       }
@@ -63,6 +68,13 @@ job "nox" {
         host_network = "public"
       }
       port "metrics" {}
+
+      port "ccp-metrics" {
+        to = 9384
+      }
+      port "ccp" {
+        to = 9383
+      }
 
       port "promtail" {}
     }
@@ -142,11 +154,24 @@ job "nox" {
       per_alloc       = true
     }
 
+    volume "ccp" {
+      type            = "csi"
+      source          = "ccp"
+      attachment_mode = "file-system"
+      access_mode     = "single-node-writer"
+      per_alloc       = true
+    }
+
     task "nox" {
       driver = "docker"
 
       kill_signal  = "SIGINT"
       kill_timeout = "30s"
+
+      # lifecycle {
+      #   hook    = "poststart"
+      #   sidecar = true
+      # }
 
       vault {
         policies = [
@@ -161,13 +186,18 @@ job "nox" {
 
       resources {
         cpu        = 10000
-        memory     = 5000
-        memory_max = 10000
+        memory     = 12000
+        memory_max = 14000
       }
 
       env {
         FLUENCE_ENV_AQUA_IPFS_EXTERNAL_API_MULTIADDR = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
         FLUENCE_ENV_AQUA_IPFS_LOCAL_API_MULTIADDR    = "/dns4/${var.env}-ipfs.fluence.dev/tcp/5020"
+
+
+        FLUENCE_CHAIN_LISTENER_CONFIG__WS_ENDPOINT       = "wss://ipc-dar.fluence.dev"
+        # FLUENCE_CHAIN_LISTENER_CONFIG__CCP_ENDPOINT      = "http://127.0.0.1:9383"
+        # FLUENCE_CHAIN_LISTENER_CONFIG__PROOF_POLL_PERIOD = "1s"
 
         FLUENCE_SYSTEM_SERVICES__ENABLE                      = "aqua-ipfs,decider,registry"
         FLUENCE_SYSTEM_SERVICES__DECIDER__DECIDER_PERIOD_SEC = var.decider-period
@@ -279,6 +309,50 @@ job "nox" {
         env         = true
       }
     }
+
+    # task "ccp" {
+    #   driver = "docker"
+    #
+    #   kill_signal  = "SIGINT"
+    #   kill_timeout = "30s"
+    #
+    #   env {
+    #     CCP_LOG    = "tokio=error,hyper=error,jsonrpsee-server=error,trace"
+    #     CCP_CONFIG = "/local/Config.toml"
+    #   }
+    #
+    #   volume_mount {
+    #     volume      = "ccp"
+    #     destination = "/fluence/data"
+    #   }
+    #
+    #   resources {
+    #     cpu        = 10000
+    #     memory     = 12000
+    #     memory_max = 14000
+    #   }
+    #
+    #   config {
+    #     image          = var.ccp-image
+    #     auth_soft_fail = true
+    #
+    #     labels {
+    #       replica = "ccp-${NOMAD_ALLOC_INDEX}"
+    #     }
+    #
+    #     ports = [
+    #       "ccp",
+    #       "ccp-metrics",
+    #     ]
+    #   }
+    #
+    #   template {
+    #     data        = <<-EOH
+    #     {{ key "configs/fluence/nox/ccp.Config.toml" }}
+    #     EOH
+    #     destination = "local/Config.toml"
+    #   }
+    # }
 
     task "promtail" {
       driver = "docker"
@@ -437,7 +511,7 @@ job "nox" {
       tags = [
         "traefik.enable=true",
         "traefik.http.routers.faucet.entrypoints=https",
-        "traefik.http.routers.faucet.rule=Host(`faucet-${var.env}.fluence.dev`) || Host(`faucet-dar.fluence.dev`)",
+        "traefik.http.routers.faucet.rule=Host(`faucet-dar.fluence.dev`)",
       ]
     }
 
@@ -454,12 +528,12 @@ job "nox" {
 
       env {
         FAUCET_TIMEOUT   = "86400"
-        FAUCET_USD_VALUE = "1000"
-        FAUCET_FLT_VALUE = "100"
+        FAUCET_USD_VALUE = "100"
+        FAUCET_FLT_VALUE = "10"
         FAUCET_DATA_DIR  = "/alloc/data"
 
-        NEXT_PUBLIC_CHAIN_NAME      = "Fluence dar Network"
-        NEXT_PUBLIC_BLOCK_EXPLORER  = "https://blockscout-dar.fluence.dev"
+        NEXT_PUBLIC_CHAIN_NAME      = "Fluence ${var.env} Network"
+        NEXT_PUBLIC_BLOCK_EXPLORER  = "https://blockscout-${var.env}.fluence.dev"
         NEXT_PUBLIC_NATIVE_CURRENCY = "tFLT"
       }
 

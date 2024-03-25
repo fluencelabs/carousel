@@ -132,7 +132,7 @@ jobs:
 
       - name: Check PR labels
         id: labels
-        uses: shioyang/check-pr-labels-on-push-action@v1.0.9
+        uses: shioyang/check-pr-labels-on-push-action@v1.0.12
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           labels: '["cleanup"]'
